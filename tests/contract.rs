@@ -220,10 +220,10 @@ async fn test_contract_saved() -> Result<()> {
     let client = SignerMiddleware::new(provider.clone(), wallet.with_chain_id(97u64));
     let client = Arc::new(client);
 
-    let cm1 = Committee::load("./tcm1.tmp")?;
+    let cm1 = Committee::load("./data/tcm1.tmp")?;
     // let cm2 = Committee::load("./tcm2.tmp")?;
     let cm2 = cm1.clone();
-    let mut ca = CA::load("./tca.tmp")?;
+    let mut ca = CA::load("./data/tca.tmp")?;
 
     println!("start to set vk:");
     let _res = cm1.set_derive_vk(contract_address, client.clone()).await?;
