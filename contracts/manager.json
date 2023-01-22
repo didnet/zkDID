@@ -1,0 +1,1299 @@
+[
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "AddressRevoke",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "appid",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "appkey",
+				"type": "uint256"
+			}
+		],
+		"name": "AppkeySet",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "bytes32",
+				"name": "role",
+				"type": "bytes32"
+			},
+			{
+				"indexed": true,
+				"internalType": "bytes32",
+				"name": "previousAdminRole",
+				"type": "bytes32"
+			},
+			{
+				"indexed": true,
+				"internalType": "bytes32",
+				"name": "newAdminRole",
+				"type": "bytes32"
+			}
+		],
+		"name": "RoleAdminChanged",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "bytes32",
+				"name": "role",
+				"type": "bytes32"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			}
+		],
+		"name": "RoleGranted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "bytes32",
+				"name": "role",
+				"type": "bytes32"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			}
+		],
+		"name": "RoleRevoked",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "c1y",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "UserMarked",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "A",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "C1",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "C2",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "C3",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "ei",
+						"type": "uint256"
+					}
+				],
+				"indexed": false,
+				"internalType": "struct IdentityManager.IdentityFullMeta",
+				"name": "meta",
+				"type": "tuple"
+			}
+		],
+		"name": "UserRegister",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "version",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "root1",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "root2",
+				"type": "uint256"
+			}
+		],
+		"name": "rootsUpdate",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "DEFAULT_ADMIN_ROLE",
+		"outputs": [
+			{
+				"internalType": "bytes32",
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_cm",
+				"type": "uint256"
+			}
+		],
+		"name": "addCommittee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "appkeyVK",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "X",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "Y",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct IdentityManager.G1Point",
+				"name": "alfa1",
+				"type": "tuple"
+			},
+			{
+				"components": [
+					{
+						"internalType": "uint256[2]",
+						"name": "X",
+						"type": "uint256[2]"
+					},
+					{
+						"internalType": "uint256[2]",
+						"name": "Y",
+						"type": "uint256[2]"
+					}
+				],
+				"internalType": "struct IdentityManager.G2Point",
+				"name": "beta2",
+				"type": "tuple"
+			},
+			{
+				"components": [
+					{
+						"internalType": "uint256[2]",
+						"name": "X",
+						"type": "uint256[2]"
+					},
+					{
+						"internalType": "uint256[2]",
+						"name": "Y",
+						"type": "uint256[2]"
+					}
+				],
+				"internalType": "struct IdentityManager.G2Point",
+				"name": "gamma2",
+				"type": "tuple"
+			},
+			{
+				"components": [
+					{
+						"internalType": "uint256[2]",
+						"name": "X",
+						"type": "uint256[2]"
+					},
+					{
+						"internalType": "uint256[2]",
+						"name": "Y",
+						"type": "uint256[2]"
+					}
+				],
+				"internalType": "struct IdentityManager.G2Point",
+				"name": "delta2",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "appkeys",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "baseNumber",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "committee",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "committeeId",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "deriveVK",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "X",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "Y",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct IdentityManager.G1Point",
+				"name": "alfa1",
+				"type": "tuple"
+			},
+			{
+				"components": [
+					{
+						"internalType": "uint256[2]",
+						"name": "X",
+						"type": "uint256[2]"
+					},
+					{
+						"internalType": "uint256[2]",
+						"name": "Y",
+						"type": "uint256[2]"
+					}
+				],
+				"internalType": "struct IdentityManager.G2Point",
+				"name": "beta2",
+				"type": "tuple"
+			},
+			{
+				"components": [
+					{
+						"internalType": "uint256[2]",
+						"name": "X",
+						"type": "uint256[2]"
+					},
+					{
+						"internalType": "uint256[2]",
+						"name": "Y",
+						"type": "uint256[2]"
+					}
+				],
+				"internalType": "struct IdentityManager.G2Point",
+				"name": "gamma2",
+				"type": "tuple"
+			},
+			{
+				"components": [
+					{
+						"internalType": "uint256[2]",
+						"name": "X",
+						"type": "uint256[2]"
+					},
+					{
+						"internalType": "uint256[2]",
+						"name": "Y",
+						"type": "uint256[2]"
+					}
+				],
+				"internalType": "struct IdentityManager.G2Point",
+				"name": "delta2",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "role",
+				"type": "bytes32"
+			}
+		],
+		"name": "getRoleAdmin",
+		"outputs": [
+			{
+				"internalType": "bytes32",
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "role",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "grantRole",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "role",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "hasRole",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "identityAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "identityInfo",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "A",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "C2",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "ei",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "numOfAddress",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "numOfCommittee",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "pendingRootsNum",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256[6]",
+				"name": "input",
+				"type": "uint256[6]"
+			},
+			{
+				"components": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point",
+						"name": "A",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256[2]",
+								"name": "X",
+								"type": "uint256[2]"
+							},
+							{
+								"internalType": "uint256[2]",
+								"name": "Y",
+								"type": "uint256[2]"
+							}
+						],
+						"internalType": "struct IdentityManager.G2Point",
+						"name": "B",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point",
+						"name": "C",
+						"type": "tuple"
+					}
+				],
+				"internalType": "struct IdentityManager.Proof",
+				"name": "proof",
+				"type": "tuple"
+			}
+		],
+		"name": "register",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "cm",
+				"type": "address"
+			}
+		],
+		"name": "removeCommittee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "role",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "renounceRole",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address[]",
+				"name": "addrs",
+				"type": "address[]"
+			}
+		],
+		"name": "revoke",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "role",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "revokeRole",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "rootsApprovers",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "rootsHash1",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "rootsHash2",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "rootsVersion",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "user",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "appkey",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "appid",
+				"type": "uint256"
+			},
+			{
+				"components": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point",
+						"name": "A",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256[2]",
+								"name": "X",
+								"type": "uint256[2]"
+							},
+							{
+								"internalType": "uint256[2]",
+								"name": "Y",
+								"type": "uint256[2]"
+							}
+						],
+						"internalType": "struct IdentityManager.G2Point",
+						"name": "B",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point",
+						"name": "C",
+						"type": "tuple"
+					}
+				],
+				"internalType": "struct IdentityManager.Proof",
+				"name": "proof",
+				"type": "tuple"
+			}
+		],
+		"name": "setAppkey",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"components": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point",
+						"name": "alfa1",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256[2]",
+								"name": "X",
+								"type": "uint256[2]"
+							},
+							{
+								"internalType": "uint256[2]",
+								"name": "Y",
+								"type": "uint256[2]"
+							}
+						],
+						"internalType": "struct IdentityManager.G2Point",
+						"name": "beta2",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256[2]",
+								"name": "X",
+								"type": "uint256[2]"
+							},
+							{
+								"internalType": "uint256[2]",
+								"name": "Y",
+								"type": "uint256[2]"
+							}
+						],
+						"internalType": "struct IdentityManager.G2Point",
+						"name": "gamma2",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256[2]",
+								"name": "X",
+								"type": "uint256[2]"
+							},
+							{
+								"internalType": "uint256[2]",
+								"name": "Y",
+								"type": "uint256[2]"
+							}
+						],
+						"internalType": "struct IdentityManager.G2Point",
+						"name": "delta2",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point[]",
+						"name": "IC",
+						"type": "tuple[]"
+					}
+				],
+				"internalType": "struct IdentityManager.VerifyingKey",
+				"name": "vk",
+				"type": "tuple"
+			}
+		],
+		"name": "setAppkeyVK",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "num",
+				"type": "uint256"
+			}
+		],
+		"name": "setBaseNumber",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"components": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point",
+						"name": "alfa1",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256[2]",
+								"name": "X",
+								"type": "uint256[2]"
+							},
+							{
+								"internalType": "uint256[2]",
+								"name": "Y",
+								"type": "uint256[2]"
+							}
+						],
+						"internalType": "struct IdentityManager.G2Point",
+						"name": "beta2",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256[2]",
+								"name": "X",
+								"type": "uint256[2]"
+							},
+							{
+								"internalType": "uint256[2]",
+								"name": "Y",
+								"type": "uint256[2]"
+							}
+						],
+						"internalType": "struct IdentityManager.G2Point",
+						"name": "gamma2",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256[2]",
+								"name": "X",
+								"type": "uint256[2]"
+							},
+							{
+								"internalType": "uint256[2]",
+								"name": "Y",
+								"type": "uint256[2]"
+							}
+						],
+						"internalType": "struct IdentityManager.G2Point",
+						"name": "delta2",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point[]",
+						"name": "IC",
+						"type": "tuple[]"
+					}
+				],
+				"internalType": "struct IdentityManager.VerifyingKey",
+				"name": "vk",
+				"type": "tuple"
+			}
+		],
+		"name": "setDeriveVK",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "x",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "y",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct IdentityManager.BabyPoint",
+				"name": "key",
+				"type": "tuple"
+			}
+		],
+		"name": "setTpkePub",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes4",
+				"name": "interfaceId",
+				"type": "bytes4"
+			}
+		],
+		"name": "supportsInterface",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "tpkePub",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "x",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "y",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "rh1",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "rh2",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "version",
+				"type": "uint256"
+			}
+		],
+		"name": "updateRootsHash",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "appkey",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "appid",
+				"type": "uint256"
+			},
+			{
+				"components": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point",
+						"name": "A",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256[2]",
+								"name": "X",
+								"type": "uint256[2]"
+							},
+							{
+								"internalType": "uint256[2]",
+								"name": "Y",
+								"type": "uint256[2]"
+							}
+						],
+						"internalType": "struct IdentityManager.G2Point",
+						"name": "B",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point",
+						"name": "C",
+						"type": "tuple"
+					}
+				],
+				"internalType": "struct IdentityManager.Proof",
+				"name": "proof",
+				"type": "tuple"
+			}
+		],
+		"name": "verifyAppkey",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
