@@ -1,7 +1,7 @@
-use apdid::ca_client::CA;
-use apdid::committee_client::Committee;
-use apdid::tpke::PublicKey;
-use apdid::user_client::Client;
+use hades::ca_client::CA;
+use hades::committee_client::Committee;
+use hades::tpke::PublicKey;
+use hades::user_client::Client;
 use baby_jub::{new_key, Point, PrivateKey};
 use num_bigint::{BigInt, ToBigInt};
 

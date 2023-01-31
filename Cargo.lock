@@ -59,31 +59,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "apdid"
-version = "0.1.0"
-dependencies = [
- "ark-bn254",
- "ark-circom",
- "ark-ec",
- "ark-groth16",
- "ark-relations",
- "ark-serialize",
- "baby-jub",
- "color-eyre",
- "ethers",
- "eyre",
- "lazy_static",
- "libsecp256k1",
- "num-bigint",
- "num-traits",
- "postcard",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
 name = "ark-bn254"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1849,6 +1824,31 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
+]
+
+[[package]]
+name = "hades"
+version = "0.1.0"
+dependencies = [
+ "ark-bn254",
+ "ark-circom",
+ "ark-ec",
+ "ark-groth16",
+ "ark-relations",
+ "ark-serialize",
+ "baby-jub",
+ "color-eyre",
+ "ethers",
+ "eyre",
+ "lazy_static",
+ "libsecp256k1",
+ "num-bigint",
+ "num-traits",
+ "postcard",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]

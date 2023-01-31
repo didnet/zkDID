@@ -1,10 +1,11 @@
 use color_eyre::Result;
 
-use apdid::ca_client::CA;
-use apdid::committee_client::Committee;
-use apdid::tpke::PublicKey;
-use apdid::user_client::Client;
-use apdid::IdentityManager;
+use hades::ca_client::CA;
+use hades::committee_client::Committee;
+use hades::tpke::PublicKey;
+use hades::user_client::Client;
+use hades::IdentityManager;
+use hades::get_timestamp;
 use num_bigint::{BigInt, Sign, ToBigInt};
 
 use core::str::FromStr;
@@ -221,7 +222,7 @@ async fn test_contract_saved() -> Result<()> {
     let client = Arc::new(client);
 
     let cm1 = Committee::load("./data/tcm1.tmp")?;
-    // let cm2 = Committee::load("./tcm2.tmp")?;
+    // let cm2 = Committee::load("./data/tcm2.tmp")?;
     let cm2 = cm1.clone();
     let mut ca = CA::load("./data/tca.tmp")?;
 
@@ -232,7 +233,7 @@ async fn test_contract_saved() -> Result<()> {
 
     println!("start to set root:");
     let _res = cm1
-        .update_roots_hash(3, contract_address, client.clone())
+        .update_roots_hash(get_timestamp(), contract_address, client.clone())
         .await?;
 
     println!("Init CA finish!");

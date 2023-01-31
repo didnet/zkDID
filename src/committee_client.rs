@@ -313,11 +313,12 @@ impl Committee {
         let address = contract_address.parse::<Address>()?;
         let contract = IdentityManager::new(address, client.clone());
         let user_address = user_address.parse::<Address>()?;
+        let bn = client.get_block_number().await?;
         // query the contract
         let logs = contract
             .user_register_filter()
             .topic1(vec![user_address])
-            .from_block(13091295u64)
+            .from_block(bn-500)
             .query()
             .await?;
         if logs.len() > 0 {
@@ -336,6 +337,7 @@ impl Committee {
         let address = contract_address.parse::<Address>()?;
         let contract = IdentityManager::new(address, client.clone());
         let n = contract.num_of_address().call().await?;
+        let bn = client.get_block_number().await?;
 
         let c1ys: Vec<[u8; 32]> = (0u64..(n.as_u64()))
             .map(|id| {
@@ -358,7 +360,7 @@ impl Committee {
         let logs = contract
             .user_marked_filter()
             .topic1(c1ys)
-            .from_block(13091295u64)
+            .from_block(bn-500) // for test
             .query()
             .await?;
         let address_all: Vec<Address> = logs.iter().map(|v| v.user).collect();
