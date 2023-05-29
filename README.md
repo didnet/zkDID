@@ -1,5 +1,5 @@
 # Hades
-Hades is an EVM-compatible decentralized identity system that supports privacy-preserving, accountability and application-level sybil-resistance.
+Hades is an practical decentralized identity system that supports privacy-preserving, full accountability and Fine-gained sybil-resistance.
 
 Hades is implemented using Rust and Solidity. You can run it with:
 
@@ -10,8 +10,6 @@ cargo test --all
 ## Test results:
 
 ```c
-running 1 test
-test test_contract_saved has been running for over 60 seconds
 start to set vk:
 Set_derive_vk: 0x62e6d57611c4950534f9f4750afbb58908f8ad27d38b522210f21ddda03db163, Gas_used: Some(648420)
 Set_appkey_vk: 0xe1d98ac785309aa5570dffc2ae6bd6ea043902a4f5eb7fb57883163bf9f84cb7, Gas_used: Some(523660)
