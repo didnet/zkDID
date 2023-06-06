@@ -161,7 +161,10 @@ impl Client {
         let circom = builder.build().unwrap();
         let proof = prove(circom, &ca.zkp_params, &mut rng).unwrap();
 
-        println!("Credential proof time: {:?} ms", time_start.elapsed().unwrap().as_millis());
+        println!(
+            "Credential proof time: {:?} ms",
+            time_start.elapsed().unwrap().as_millis()
+        );
 
         let request = CredentialRequest {
             master_key_g: raw_credential.master_key_g(),
@@ -372,8 +375,11 @@ impl Client {
             user_address,
             n.as_u64(),
         );
-        println!("Register proof time: {:?} ms", time_start.elapsed().unwrap().as_millis());
-    
+        println!(
+            "Register proof time: {:?} ms",
+            time_start.elapsed().unwrap().as_millis()
+        );
+
         let inputs = &req.pub_inputs[..6];
         let _res = contract.do_register(req.proof, inputs).await?;
         Ok(req.sn)
@@ -390,10 +396,13 @@ impl Client {
     ) -> Result<()> {
         let address = contract_address.parse::<Address>()?;
         let contract = IdentityManager::new(address, client.clone());
-        
+
         let time_start = SystemTime::now();
         let req = self.gen_appkey(committee, master_key, sn, appid);
-        println!("Appkey proof time: {:?} ms", time_start.elapsed().unwrap().as_millis());
+        println!(
+            "Appkey proof time: {:?} ms",
+            time_start.elapsed().unwrap().as_millis()
+        );
 
         let _res = contract
             .do_set_appkey(&req.address, &req.appkey, appid, req.proof)

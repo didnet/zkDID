@@ -1,13 +1,25 @@
 # Hades
 Hades is an practical decentralized identity system that supports privacy-preserving, full accountability and Fine-gained sybil-resistance.
 
+## Structure
+
+**contracts/manager.sol** is the Identity Contract can run on EVM-Powered chains.
+
+**src/ca_client.rs** is a client for CA.
+
+**src/committee_client.rs** is a client for the committee.
+
+**src/user_client.rs** is a client for the users.
+
+## Test and Benchmark
+
 Hades is implemented using Rust and Solidity. You can run it with:
 
 ```bash
 cargo test --all
 ```
 
-## Test results:
+### Test results:
 
 ```c
 start to set vk:
@@ -33,7 +45,7 @@ revoke_user: 0x26f8eb0ecbb4490ccd0ebafa026d0e21d3a01fc71bba7701f37d22f159230f24,
 test test_contract_saved ... ok
 ```
 
-## Circuits  constraints
+### Circuits  constraints
 
 Credential generation:
 

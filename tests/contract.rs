@@ -2,10 +2,10 @@ use color_eyre::Result;
 
 use hades::ca_client::CA;
 use hades::committee_client::Committee;
+use hades::get_timestamp;
 use hades::tpke::PublicKey;
 use hades::user_client::Client;
 use hades::IdentityManager;
-use hades::get_timestamp;
 use num_bigint::{BigInt, Sign, ToBigInt};
 
 use core::str::FromStr;
@@ -114,11 +114,11 @@ async fn test_contract() -> Result<()> {
         .await?;
 
     println!("Init CA finish!");
-    
+
     // cm1.save("./cm1.tmp")?;
     // cm2.save("./cm2.tmp")?;
     // ca.save("./ca.tmp")?;
-    
+
     // println!("Saved!");
 
     // gen credential
@@ -159,7 +159,7 @@ async fn test_contract() -> Result<()> {
             client.clone(),
         )
         .await?;
-    
+
     let wallet2 = "227db26d4fdf8470567914916252422fa7a7a98499beca9f4bd85f4d25bc5cf6"
         .parse::<LocalWallet>()?;
     // let address = contract_address.parse::<Address>()?;
@@ -182,7 +182,14 @@ async fn test_contract() -> Result<()> {
     println!("Identity 2 derive finish!");
 
     println!("Begin to revoke:");
-    let user_meta = cm1.get_user_meta("8181082017346679045203273291153336789837", contract_address, client.clone()).await?.unwrap();
+    let user_meta = cm1
+        .get_user_meta(
+            "8181082017346679045203273291153336789837",
+            contract_address,
+            client.clone(),
+        )
+        .await?
+        .unwrap();
     let cipher1 = user_meta.to_cipher();
     let k1 = cm1.decrypt_shard(&cipher1.c1);
     let k2 = cm2.decrypt_shard(&cipher1.c1);
@@ -198,11 +205,14 @@ async fn test_contract() -> Result<()> {
 
     let beta = user_info.cipher.decrypt(vec![&k2_1, &k2_2]).scalar_y();
 
-    let derived_address = cm1.get_derived_address(&beta, contract_address, client.clone()).await?;
+    let derived_address = cm1
+        .get_derived_address(&beta, contract_address, client.clone())
+        .await?;
     println!("derived_address: {:?}", derived_address);
 
-    let _res = cm1.revoke_user(derived_address, contract_address, client.clone()).await?;
-
+    let _res = cm1
+        .revoke_user(derived_address, contract_address, client.clone())
+        .await?;
 
     Ok(())
 }
@@ -276,7 +286,7 @@ async fn test_contract_saved() -> Result<()> {
             client.clone(),
         )
         .await?;
-    
+
     let wallet2 = "227db26d4fdf8470567914916252422fa7a7a98499beca9f4bd85f4d25bc5cf6"
         .parse::<LocalWallet>()?;
     // let address = contract_address.parse::<Address>()?;
@@ -299,7 +309,14 @@ async fn test_contract_saved() -> Result<()> {
     println!("Identity 2 derive finish!");
 
     println!("Begin to revoke:");
-    let user_meta = cm1.get_user_meta("8181082017346679045203273291153336789837", contract_address, client.clone()).await?.unwrap();
+    let user_meta = cm1
+        .get_user_meta(
+            "8181082017346679045203273291153336789837",
+            contract_address,
+            client.clone(),
+        )
+        .await?
+        .unwrap();
     let cipher1 = user_meta.to_cipher();
     let k1 = cm1.decrypt_shard(&cipher1.c1);
     let k2 = cm2.decrypt_shard(&cipher1.c1);
@@ -315,11 +332,14 @@ async fn test_contract_saved() -> Result<()> {
 
     let beta = user_info.cipher.decrypt(vec![&k2_1, &k2_2]).scalar_y();
 
-    let derived_address = cm1.get_derived_address(&beta, contract_address, client.clone()).await?;
+    let derived_address = cm1
+        .get_derived_address(&beta, contract_address, client.clone())
+        .await?;
     println!("derived_address: {:?}", derived_address);
 
-    let _res = cm1.revoke_user(derived_address, contract_address, client.clone()).await?;
-
+    let _res = cm1
+        .revoke_user(derived_address, contract_address, client.clone())
+        .await?;
 
     Ok(())
 }

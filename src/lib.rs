@@ -6,8 +6,8 @@ use ethers::prelude::abigen;
 use ethers::providers::Middleware;
 use ethers::types::U256;
 use num_bigint::{BigInt, Sign};
-use std::time::{SystemTime, UNIX_EPOCH};
 use std::convert::TryInto;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub mod ca_client;
 pub mod committee_client;

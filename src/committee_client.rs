@@ -291,11 +291,7 @@ impl Committee {
         let address = contract_address.parse::<Address>()?;
         let contract = IdentityManager::new(address, client.clone());
         // query the contract
-        let _res = contract
-            .revoke(user_address)
-            .send()
-            .await?
-            .await?;
+        let _res = contract.revoke(user_address).send().await?.await?;
         let _res = _res.unwrap();
         println!(
             "revoke_user: {:?}, Gas_used: {:?}",
@@ -318,7 +314,7 @@ impl Committee {
         let logs = contract
             .user_register_filter()
             .topic1(vec![user_address])
-            .from_block(bn-500)
+            .from_block(bn - 500)
             .query()
             .await?;
         if logs.len() > 0 {
@@ -360,11 +356,11 @@ impl Committee {
         let logs = contract
             .user_marked_filter()
             .topic1(c1ys)
-            .from_block(bn-500) // for test
+            .from_block(bn - 500) // for test
             .query()
             .await?;
         let address_all: Vec<Address> = logs.iter().map(|v| v.user).collect();
-        
+
         Ok(address_all)
     }
 }
