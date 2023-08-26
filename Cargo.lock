@@ -72,7 +72,7 @@ dependencies = [
 [[package]]
 name = "ark-circom"
 version = "0.1.0"
-source = "git+https://github.com/kilb/ark-circom.git#91aa1252ba05a433c990d298c06fb9426f5907df"
+source = "git+https://github.com/kilb/ark-circom.git?rev=b810f7a#b810f7a390e61d5054ea04deaa8bd32f05c8f501"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -173,7 +173,7 @@ dependencies = [
 [[package]]
 name = "ark-groth16"
 version = "0.3.0"
-source = "git+https://github.com/arkworks-rs/groth16?rev=765817f#765817f77a6e14964c6f264d565b18676b11bd59"
+source = "git+https://github.com/didnet/groth16?rev=3dd645d#3dd645d55b5354c75bbe650b36c764f927979a4a"
 dependencies = [
  "ark-crypto-primitives",
  "ark-ec",
@@ -1833,6 +1833,7 @@ dependencies = [
  "ark-bn254",
  "ark-circom",
  "ark-ec",
+ "ark-ff",
  "ark-groth16",
  "ark-relations",
  "ark-serialize",

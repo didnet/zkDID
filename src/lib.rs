@@ -8,6 +8,7 @@ use ethers::types::U256;
 use num_bigint::{BigInt, Sign};
 use std::convert::TryInto;
 use std::time::{SystemTime, UNIX_EPOCH};
+use ark_circom::WitnessCalculator;
 
 pub mod ca_client;
 pub mod committee_client;
@@ -21,6 +22,10 @@ pub fn get_timestamp() -> u64 {
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards")
         .as_secs()
+}
+
+pub fn convert(from: impl AsRef<std::path::Path>, to: impl AsRef<std::path::Path>) {
+    WitnessCalculator::save(from, to).unwrap();
 }
 
 abigen!(IdentityManager, "./contracts/manager.json");

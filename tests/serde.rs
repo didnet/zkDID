@@ -3,7 +3,16 @@ use hades::ca_client::CA;
 use hades::committee_client::Committee;
 use hades::tpke::PublicKey;
 use hades::user_client::Client;
+use hades::convert;
 use num_bigint::{BigInt, ToBigInt};
+// use std::time::SystemTime;
+
+#[test]
+fn test_convert() {
+    convert("./circuits/key_derive_js/key_derive.wasm", "./circuits/key_derive_js/key_derive.so");
+    convert("./circuits/app_key_js/app_key.wasm", "./circuits/app_key_js/app_key.so");
+    convert("./circuits/tpke_single_js/tpke_single.wasm", "./circuits/tpke_single_js/tpke_single.so");
+}
 
 #[test]
 fn test_ca_serde() {

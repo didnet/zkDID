@@ -4,7 +4,7 @@ use crate::user_client::{ApplicationKey, IdentityRequest};
 use crate::{BabyPoint, IdentityFullMeta, IdentityManager};
 use ark_bn254::Bn254;
 use ark_circom::{CircomBuilder, CircomConfig};
-use ark_groth16::{generate_random_parameters, prepare_verifying_key, verify_proof, ProvingKey};
+use ark_groth16::{generate_random_parameters, prepare_verifying_key, verify_proof, ProvingKey, KeySize};
 use ark_serialize::*;
 use baby_jub::{new_key, poseidon_hash, Point, G};
 use color_eyre::Result;
@@ -14,6 +14,9 @@ use rand::thread_rng;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::fs::File;
+use ark_ff::bytes::ToBytes;
+use std::io::{BufReader, BufWriter};
+use std::time::SystemTime;
 
 use ethers::{
     prelude::SignerMiddleware, providers::Middleware, signers::Signer, types::Address, types::U256,
@@ -45,8 +48,8 @@ impl Committee {
         let tpke_sec = new_key().scalar_key();
 
         //TODO: make trust setup
-        let cfg = CircomConfig::<Bn254>::new(
-            "./circuits/key_derive_js/key_derive.wasm",
+        let cfg = CircomConfig::<Bn254>::load(
+            "./circuits/key_derive_js/key_derive.so",
             "./circuits/key_derive.r1cs",
         )
         .unwrap_or_else(|error| {
@@ -57,10 +60,12 @@ impl Committee {
         let circom = builder.setup();
 
         let mut rng = thread_rng();
+        println!("para_gen: {:?}", SystemTime::now());
         let params = generate_random_parameters::<Bn254, _, _>(circom, &mut rng).unwrap();
+        println!("para_gen_done: {:?}", SystemTime::now());
 
-        let app_cfg = CircomConfig::<Bn254>::new(
-            "./circuits/app_key_js/app_key.wasm",
+        let app_cfg = CircomConfig::<Bn254>::load(
+            "./circuits/app_key_js/app_key.so",
             "./circuits/app_key.r1cs",
         )
         .unwrap_or_else(|error| {
@@ -98,12 +103,20 @@ impl Committee {
         let mut file1 = File::create(path.to_owned() + ".1")?;
         let file2 = File::create(path.to_owned() + ".2")?;
         let file3 = File::create(path.to_owned() + ".3")?;
+        let file4 = File::create(path.to_owned() + ".4")?;
+        let file5 = File::create(path.to_owned() + ".5")?;
 
         let p1_data = to_stdvec(&self.part1()).unwrap();
         file1.write_all(&p1_data)?;
-
-        self.zkp_params.serialize(file2).unwrap();
-        self.app_params.serialize(file3).unwrap();
+        
+        let w2 = BufWriter::new(file2);
+        self.zkp_params.size().serialize_unchecked(w2).unwrap();
+        let w3 = BufWriter::new(file3);
+        self.app_params.size().serialize_unchecked(w3).unwrap();
+        let w4 = BufWriter::new(file4);
+        self.zkp_params.write(w4).unwrap();
+        let w5 = BufWriter::new(file5);
+        self.app_params.write(w5).unwrap();
 
         Ok(())
     }
@@ -111,28 +124,40 @@ impl Committee {
     pub fn load(path: &str) -> std::io::Result<Self> {
         let p1_data = fs::read(path.to_owned() + ".1")?;
         let p1: CommitteePart1 = from_bytes(&p1_data).unwrap();
-
+        println!("zkp_size: {:?}", SystemTime::now());
         let file2 = File::open(path.to_owned() + ".2")?;
-        let zkp_params = ProvingKey::<Bn254>::deserialize(file2).unwrap();
-
+        let reader2 = BufReader::new(file2);
+        let zkp_size = KeySize::deserialize_unchecked(reader2).unwrap();
         let file3 = File::open(path.to_owned() + ".3")?;
-        let app_params = ProvingKey::<Bn254>::deserialize(file3).unwrap();
+        let reader3 = BufReader::new(file3);
+        let app_size = KeySize::deserialize_unchecked(reader3).unwrap();
+        
+        println!("zkp_des: {:?}", SystemTime::now());
+        let file4 = File::open(path.to_owned() + ".4")?;
+        let reader4 = BufReader::new(file4);
+        let zkp_params = ProvingKey::<Bn254>::read(reader4, &zkp_size);
 
-        let zkp_cfg = CircomConfig::<Bn254>::new(
-            "./circuits/key_derive_js/key_derive.wasm",
+        println!("app_des: {:?}", SystemTime::now());
+        let file5 = File::open(path.to_owned() + ".5")?;
+        let reader5 = BufReader::new(file5);
+        let app_params = ProvingKey::<Bn254>::read(reader5, &app_size);
+        println!("zkp_cfg: {:?}", SystemTime::now());
+        let zkp_cfg = CircomConfig::<Bn254>::load(
+            "./circuits/key_derive_js/key_derive.so",
             "./circuits/key_derive.r1cs",
         )
         .unwrap_or_else(|error| {
             panic!("{:?}", error);
         });
-
-        let app_cfg = CircomConfig::<Bn254>::new(
-            "./circuits/app_key_js/app_key.wasm",
+        println!("app_cfg: {:?}", SystemTime::now());
+        let app_cfg = CircomConfig::<Bn254>::load(
+            "./circuits/app_key_js/app_key.so",
             "./circuits/app_key.r1cs",
         )
         .unwrap_or_else(|error| {
             panic!("{:?}", error);
         });
+        println!("done: {:?}", SystemTime::now());
 
         Ok(Committee {
             tpke_sec: p1.tpke_sec,

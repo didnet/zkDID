@@ -230,7 +230,8 @@ async fn test_contract_saved() -> Result<()> {
 
     let client = SignerMiddleware::new(provider.clone(), wallet.with_chain_id(97u64));
     let client = Arc::new(client);
-
+    
+    // 1. Committee setup
     let cm1 = Committee::load("./data/tcm1.tmp")?;
     // let cm2 = Committee::load("./data/tcm2.tmp")?;
     let cm2 = cm1.clone();

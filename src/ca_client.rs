@@ -3,7 +3,7 @@ use crate::tpke::{Cipher, PublicKey};
 use ark_bn254::Bn254;
 use ark_circom::{CircomBuilder, CircomConfig};
 use ark_groth16::{
-    generate_random_parameters, prepare_verifying_key, verify_proof, Proof, ProvingKey,
+    generate_random_parameters, prepare_verifying_key, verify_proof, Proof, ProvingKey, KeySize
 };
 use ark_serialize::*;
 use baby_jub::{new_key, poseidon_hash, Point, PrivateKey, Signature, B8, H8};
@@ -14,6 +14,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
+use ark_ff::bytes::ToBytes;
+use std::io::{BufReader, BufWriter};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UserInfo {
@@ -79,8 +81,8 @@ impl CA {
             })
             .collect();
 
-        let cfg = CircomConfig::<Bn254>::new(
-            "./circuits/tpke_single_js/tpke_single.wasm",
+        let cfg = CircomConfig::<Bn254>::load(
+            "./circuits/tpke_single_js/tpke_single.so",
             "./circuits/tpke_single.r1cs",
         )
         .unwrap_or_else(|error| {
@@ -123,11 +125,15 @@ impl CA {
     pub fn save(&self, path: &str) -> std::io::Result<()> {
         let mut file1 = File::create(path.to_owned() + ".1")?;
         let file2 = File::create(path.to_owned() + ".2")?;
+        let file3 = File::create(path.to_owned() + ".3")?;
 
         let p1_data = to_stdvec(&self.part1()).unwrap();
         file1.write_all(&p1_data)?;
 
-        self.zkp_params.serialize(file2).unwrap();
+        let w2 = BufWriter::new(file2);
+        self.zkp_params.size().serialize_unchecked(w2).unwrap();
+        let w3 = BufWriter::new(file3);
+        self.zkp_params.write(w3).unwrap();
 
         Ok(())
     }
@@ -137,10 +143,15 @@ impl CA {
         let ca1: CAPart1 = from_bytes(&p1_data).unwrap();
 
         let file2 = File::open(path.to_owned() + ".2")?;
-        let params = ProvingKey::<Bn254>::deserialize(file2).unwrap();
+        let reader2 = BufReader::new(file2);
+        let zkp_size = KeySize::deserialize_unchecked(reader2).unwrap();
+        
+        let file3 = File::open(path.to_owned() + ".3")?;
+        let reader3 = BufReader::new(file3);
+        let zkp_params = ProvingKey::<Bn254>::read(reader3, &zkp_size);
 
-        let cfg = CircomConfig::<Bn254>::new(
-            "./circuits/tpke_single_js/tpke_single.wasm",
+        let cfg = CircomConfig::<Bn254>::load(
+            "./circuits/tpke_single_js/tpke_single.so",
             "./circuits/tpke_single.r1cs",
         )
         .unwrap_or_else(|error| {
@@ -154,7 +165,7 @@ impl CA {
             user_infos: ca1.user_infos,
             blacklist: ca1.blacklist,
             zkp_cfg: cfg,
-            zkp_params: params,
+            zkp_params,
             tpke_key: ca1.tpke_key,
         })
     }

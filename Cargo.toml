@@ -9,12 +9,13 @@ edition = "2021"
 baby-jub = { git = "https://github.com/kilb/babyjubjub-rs", rev="2245ce2" }
 num-bigint = {version = "0.4", features = ["rand", "serde"]}
 rand = "0.8.5"
-ark-circom = { git = "https://github.com/kilb/ark-circom.git", features = ["circom-2"] }
-ark-groth16 = { git = "https://github.com/arkworks-rs/groth16", rev = "765817f", features = ["parallel"] }
+ark-circom = { git = "https://github.com/kilb/ark-circom.git", rev = "b810f7a", features = ["circom-2"] }
+ark-groth16 = { git = "https://github.com/didnet/groth16", rev = "3dd645d", features = ["parallel"] }
 ark-serialize = { version = "^0.3.0", default-features = false, features = [ "derive" ] }
 ark-ec = { version = "0.3.0", default-features = false, features = ["parallel"] }
 ark-relations = { version = "0.3.0", default-features = false }
 ark-bn254 = { version = "0.3.0" }
+ark-ff = { version = "^0.3.0", default-features = false }
 color-eyre = "0.5"
 lazy_static = "1.4.0"
 libsecp256k1 = "0.7.1"
