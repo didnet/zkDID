@@ -16,7 +16,6 @@ use std::fs;
 use std::fs::File;
 use ark_ff::bytes::ToBytes;
 use std::io::{BufReader, BufWriter};
-use std::time::SystemTime;
 
 use ethers::{
     prelude::SignerMiddleware, providers::Middleware, signers::Signer, types::Address, types::U256,
@@ -60,9 +59,7 @@ impl Committee {
         let circom = builder.setup();
 
         let mut rng = thread_rng();
-        println!("para_gen: {:?}", SystemTime::now());
         let params = generate_random_parameters::<Bn254, _, _>(circom, &mut rng).unwrap();
-        println!("para_gen_done: {:?}", SystemTime::now());
 
         let app_cfg = CircomConfig::<Bn254>::load(
             "./circuits/app_key_js/app_key.so",
@@ -124,7 +121,7 @@ impl Committee {
     pub fn load(path: &str) -> std::io::Result<Self> {
         let p1_data = fs::read(path.to_owned() + ".1")?;
         let p1: CommitteePart1 = from_bytes(&p1_data).unwrap();
-        println!("zkp_size: {:?}", SystemTime::now());
+
         let file2 = File::open(path.to_owned() + ".2")?;
         let reader2 = BufReader::new(file2);
         let zkp_size = KeySize::deserialize_unchecked(reader2).unwrap();
@@ -132,16 +129,14 @@ impl Committee {
         let reader3 = BufReader::new(file3);
         let app_size = KeySize::deserialize_unchecked(reader3).unwrap();
         
-        println!("zkp_des: {:?}", SystemTime::now());
         let file4 = File::open(path.to_owned() + ".4")?;
         let reader4 = BufReader::new(file4);
         let zkp_params = ProvingKey::<Bn254>::read(reader4, &zkp_size);
 
-        println!("app_des: {:?}", SystemTime::now());
         let file5 = File::open(path.to_owned() + ".5")?;
         let reader5 = BufReader::new(file5);
         let app_params = ProvingKey::<Bn254>::read(reader5, &app_size);
-        println!("zkp_cfg: {:?}", SystemTime::now());
+
         let zkp_cfg = CircomConfig::<Bn254>::load(
             "./circuits/key_derive_js/key_derive.so",
             "./circuits/key_derive.r1cs",
@@ -149,7 +144,7 @@ impl Committee {
         .unwrap_or_else(|error| {
             panic!("{:?}", error);
         });
-        println!("app_cfg: {:?}", SystemTime::now());
+
         let app_cfg = CircomConfig::<Bn254>::load(
             "./circuits/app_key_js/app_key.so",
             "./circuits/app_key.r1cs",
@@ -157,7 +152,6 @@ impl Committee {
         .unwrap_or_else(|error| {
             panic!("{:?}", error);
         });
-        println!("done: {:?}", SystemTime::now());
 
         Ok(Committee {
             tpke_sec: p1.tpke_sec,
@@ -218,7 +212,7 @@ impl Committee {
         let _res = contract.add_committee(cm2.into()).send().await?.await?;
         let _res = _res.unwrap();
         println!(
-            "Add_committee: {:?}, Gas_used: {:?}",
+            "tx_hash: {:?}, Gas_used: {:?}",
             _res.transaction_hash, _res.gas_used
         );
         Ok(())
@@ -248,7 +242,7 @@ impl Committee {
             .await?;
         let _res = _res.unwrap();
         println!(
-            "Update_roots_hash: {:?}, Gas_used: {:?}",
+            "tx_hash: {:?}, Gas_used: {:?}",
             _res.transaction_hash, _res.gas_used
         );
         Ok(())
@@ -273,7 +267,7 @@ impl Committee {
         let _res = contract.set_tpke_pub(key).send().await?.await?;
         let _res = _res.unwrap();
         println!(
-            "Set_tpke_pub: {:?}, Gas_used: {:?}",
+            "tx_hash: {:?}, Gas_used: {:?}",
             _res.transaction_hash, _res.gas_used
         );
         Ok(())
@@ -319,9 +313,21 @@ impl Committee {
         let _res = contract.revoke(user_address).send().await?.await?;
         let _res = _res.unwrap();
         println!(
-            "revoke_user: {:?}, Gas_used: {:?}",
+            "tx_hash: {:?}, Gas_used: {:?}",
             _res.transaction_hash, _res.gas_used
         );
+        Ok(())
+    }
+
+    pub async fn revoke_credential<M: Middleware + 'static, S: Signer + 'static>(
+        &mut self,
+        version: u64,
+        credentials: Vec<Point>,
+        contract_address: &str,
+        client: Arc<SignerMiddleware<M, S>>,
+    ) -> Result<()> {
+        self.block_tree.insert_nodes(credentials.iter().map(|x| x.scalar_y()).collect());
+        self.update_roots_hash(version, contract_address, client).await?;
         Ok(())
     }
 

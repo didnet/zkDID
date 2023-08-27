@@ -9,7 +9,7 @@ edition = "2021"
 baby-jub = { git = "https://github.com/kilb/babyjubjub-rs", rev="2245ce2" }
 num-bigint = {version = "0.4", features = ["rand", "serde"]}
 rand = "0.8.5"
-ark-circom = { git = "https://github.com/kilb/ark-circom.git", rev = "b810f7a", features = ["circom-2"] }
+ark-circom = { git = "https://github.com/kilb/ark-circom.git", rev = "bd15b5f", features = ["circom-2"] }
 ark-groth16 = { git = "https://github.com/didnet/groth16", rev = "3dd645d", features = ["parallel"] }
 ark-serialize = { version = "^0.3.0", default-features = false, features = [ "derive" ] }
 ark-ec = { version = "0.3.0", default-features = false, features = ["parallel"] }

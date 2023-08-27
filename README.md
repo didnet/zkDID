@@ -11,6 +11,26 @@ Hades is an practical decentralized identity system that supports privacy-preser
 
 **src/user_client.rs** is a client for the users.
 
+## How to build
+
+### Installing Rust
+
+Hades SDK is written in Rust. To have Rust available in your system, you can install rustup. If you’re using Linux or macOS, open a terminal and enter the following command:
+
+```bash
+curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+```
+### Installing circom
+
+Hades zkp circuits are written in circom. To have circom available in your system, you can install circom:
+
+```bash
+git clone https://github.com/iden3/circom.git
+cd circom
+cargo build --release
+cargo install --path circom
+```
+
 ## Test and Benchmark
 
 Hades is implemented using Rust and Solidity. You can run it with:

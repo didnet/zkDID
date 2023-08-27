@@ -162,7 +162,7 @@ impl Client {
         let proof = prove(circom, &ca.zkp_params, &mut rng).unwrap();
 
         println!(
-            "Credential proof time: {:?} ms",
+            "Credential request proof time: {:?} ms",
             time_start.elapsed().unwrap().as_millis()
         );
 
@@ -376,7 +376,7 @@ impl Client {
             n.as_u64(),
         );
         println!(
-            "Register proof time: {:?} ms",
+            "Pseudonym register proof time: {:?} ms",
             time_start.elapsed().unwrap().as_millis()
         );
 
@@ -400,7 +400,7 @@ impl Client {
         let time_start = SystemTime::now();
         let req = self.gen_appkey(committee, master_key, sn, appid);
         println!(
-            "Appkey proof time: {:?} ms",
+            "Sybil-resistance proof time: {:?} ms",
             time_start.elapsed().unwrap().as_millis()
         );
 

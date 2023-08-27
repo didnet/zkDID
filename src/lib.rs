@@ -97,7 +97,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         let _res = self.register(inputs, proof).send().await?.await?;
         let _res = _res.unwrap();
         println!(
-            "Register: {:?}, Gas_used: {:?}",
+            "tx_hash: {:?}, Gas_used: {:?}",
             _res.transaction_hash, _res.gas_used
         );
         Ok(true)
@@ -124,7 +124,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
             .await?;
         let _res = _res.unwrap();
         println!(
-            "Set_appkey: {:?}, Gas_used: {:?}",
+            "tx_hash: {:?}, Gas_used: {:?}",
             _res.transaction_hash, _res.gas_used
         );
         Ok(true)
@@ -137,7 +137,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         let _res = self.set_derive_vk(vk).send().await?.await?;
         let _res = _res.unwrap();
         println!(
-            "Set_derive_vk: {:?}, Gas_used: {:?}",
+            "tx_hash: {:?}, Gas_used: {:?}",
             _res.transaction_hash, _res.gas_used
         );
         Ok(true)
@@ -149,7 +149,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         let _res = self.set_appkey_vk(vk).send().await?.await?;
         let _res = _res.unwrap();
         println!(
-            "Set_appkey_vk: {:?}, Gas_used: {:?}",
+            "tx_hash: {:?}, Gas_used: {:?}",
             _res.transaction_hash, _res.gas_used
         );
         Ok(true)
