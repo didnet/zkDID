@@ -353,6 +353,44 @@ impl Client {
         }
     }
 
+    pub fn gen_identity_proof(&self, committee: &Committee, master_key: &Point, sn: &BigInt, l_range: Vec<BigInt>, r_range: Vec<BigInt>) -> (Point, BigInt, Proof<Bn254>, Vec<Fr>) {
+        let cs = self.credentials.get(master_key).unwrap();
+        let ks = cs.derived_keys.get(sn).unwrap();
+        let hash1 = poseidon_hash(l_range.iter().take(6).collect()).unwrap();
+        let hash2 = poseidon_hash(r_range.iter().take(6).collect()).unwrap();
+        let lrcm = poseidon_hash(vec![&l_range[6], &l_range[7], &r_range[6], &r_range[7], &hash1, &hash2]).unwrap();
+        
+        let credential = cs.credential.as_ref().unwrap();
+        let attr_blind =  &credential.attr_commit + &ks.commit_nonce * G.clone();
+
+        let mut builder = CircomBuilder::new(committee.pedersen_cfg.clone());
+        builder.push_input("Ax", attr_blind.scalar_x());
+        builder.push_input("Ay", attr_blind.scalar_y());
+        builder.push_input("lrcm", lrcm.clone());
+        builder.push_input("k", ks.commit_nonce.clone());
+        
+        for a in &cs.attributes {
+            builder.push_input("a", a.clone());
+        } 
+
+        for l in &l_range {
+            builder.push_input("l", l.clone());
+        }
+
+        for r in &r_range {
+            builder.push_input("r", r.clone());
+        }
+
+        let mut rng = rand::thread_rng();
+
+        let circom = builder.build().unwrap();
+        let pub_inputs = circom.get_public_inputs().unwrap();
+        let proof = prove(circom, &committee.pedersen_params, &mut rng).unwrap();
+
+        (attr_blind, lrcm, proof, pub_inputs)
+
+    }
+
     pub async fn register<M: Middleware + 'static, S: Signer + 'static>(
         &mut self,
         committee: &Committee,
@@ -406,6 +444,32 @@ impl Client {
 
         let _res = contract
             .do_set_appkey(&req.address, &req.appkey, appid, req.proof)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn verify_identity<M: Middleware + 'static, S: Signer + 'static>(
+        &mut self,
+        committee: &Committee,
+        master_key: &Point,
+        sn: &BigInt,
+        l_range: Vec<BigInt>, 
+        r_range: Vec<BigInt>,
+        contract_address: &str,
+        client: Arc<SignerMiddleware<M, S>>,
+    ) -> Result<()> {
+        let address = contract_address.parse::<Address>()?;
+        let contract = IdentityManager::new(address, client.clone());
+
+        let time_start = SystemTime::now();
+        let (a, lrcm, proof, _) = self.gen_identity_proof(committee, master_key, sn, l_range, r_range);
+        println!(
+            "Identity proof time: {:?} ms",
+            time_start.elapsed().unwrap().as_millis()
+        );
+
+        let _res = contract
+            .do_veriy_identity(&a.scalar_x(), &a.scalar_y(), &lrcm, proof)
             .await?;
         Ok(())
     }

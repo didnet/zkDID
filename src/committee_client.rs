@@ -4,7 +4,7 @@ use crate::user_client::{ApplicationKey, IdentityRequest};
 use crate::{BabyPoint, IdentityFullMeta, IdentityManager};
 use ark_bn254::Bn254;
 use ark_circom::{CircomBuilder, CircomConfig};
-use ark_groth16::{generate_random_parameters, prepare_verifying_key, verify_proof, ProvingKey, KeySize};
+use ark_groth16::{generate_random_parameters, prepare_verifying_key, verify_proof, ProvingKey, KeySize, Proof};
 use ark_serialize::*;
 use baby_jub::{new_key, poseidon_hash, Point, G};
 use color_eyre::Result;
@@ -15,6 +15,8 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::fs::File;
 use ark_ff::bytes::ToBytes;
+use ark_bn254::Fr;
+
 use std::io::{BufReader, BufWriter};
 
 use ethers::{
@@ -31,6 +33,8 @@ pub struct Committee {
     pub zkp_params: ProvingKey<Bn254>,
     pub app_cfg: CircomConfig<Bn254>,
     pub app_params: ProvingKey<Bn254>,
+    pub pedersen_cfg: CircomConfig<Bn254>,
+    pub pedersen_params: ProvingKey<Bn254>,
     pub tpke_key: Option<PublicKey>,
 }
 
@@ -75,6 +79,20 @@ impl Committee {
         let mut rng = thread_rng();
         let app_params = generate_random_parameters::<Bn254, _, _>(circom, &mut rng).unwrap();
 
+        let pedersen_cfg = CircomConfig::<Bn254>::load(
+            "./circuits/pedersen_commit_js/pedersen_commit.so",
+            "./circuits/pedersen_commit.r1cs",
+        )
+        .unwrap_or_else(|error| {
+            panic!("{:?}", error);
+        });
+
+        let builder = CircomBuilder::new(pedersen_cfg.clone());
+        let circom = builder.setup();
+
+        let mut rng = thread_rng();
+        let pedersen_params = generate_random_parameters::<Bn254, _, _>(circom, &mut rng).unwrap();
+
         Self {
             tpke_sec,
             ca_tree: MerkleTree::new(20),
@@ -83,6 +101,8 @@ impl Committee {
             zkp_params: params,
             app_cfg,
             app_params,
+            pedersen_cfg,
+            pedersen_params,
             tpke_key: None,
         }
     }
@@ -97,11 +117,13 @@ impl Committee {
     }
 
     pub fn save(&self, path: &str) -> std::io::Result<()> {
-        let mut file1 = File::create(path.to_owned() + ".1")?;
-        let file2 = File::create(path.to_owned() + ".2")?;
-        let file3 = File::create(path.to_owned() + ".3")?;
-        let file4 = File::create(path.to_owned() + ".4")?;
-        let file5 = File::create(path.to_owned() + ".5")?;
+        let mut file1 = File::create(path.to_owned() + ".dat")?;
+        let file2 = File::create(path.to_owned() + ".s1")?;
+        let file3 = File::create(path.to_owned() + ".s2")?;
+        let file4 = File::create(path.to_owned() + ".s3")?;
+        let file5 = File::create(path.to_owned() + ".p1")?;
+        let file6 = File::create(path.to_owned() + ".p2")?;
+        let file7 = File::create(path.to_owned() + ".p3")?;
 
         let p1_data = to_stdvec(&self.part1()).unwrap();
         file1.write_all(&p1_data)?;
@@ -111,31 +133,42 @@ impl Committee {
         let w3 = BufWriter::new(file3);
         self.app_params.size().serialize_unchecked(w3).unwrap();
         let w4 = BufWriter::new(file4);
-        self.zkp_params.write(w4).unwrap();
+        self.pedersen_params.size().serialize_unchecked(w4).unwrap();
         let w5 = BufWriter::new(file5);
-        self.app_params.write(w5).unwrap();
+        self.zkp_params.write(w5).unwrap();
+        let w6 = BufWriter::new(file6);
+        self.app_params.write(w6).unwrap();
+        let w7 = BufWriter::new(file7);
+        self.pedersen_params.write(w7).unwrap();
 
         Ok(())
     }
 
     pub fn load(path: &str) -> std::io::Result<Self> {
-        let p1_data = fs::read(path.to_owned() + ".1")?;
+        let p1_data = fs::read(path.to_owned() + ".dat")?;
         let p1: CommitteePart1 = from_bytes(&p1_data).unwrap();
 
-        let file2 = File::open(path.to_owned() + ".2")?;
+        let file2 = File::open(path.to_owned() + ".s1")?;
         let reader2 = BufReader::new(file2);
         let zkp_size = KeySize::deserialize_unchecked(reader2).unwrap();
-        let file3 = File::open(path.to_owned() + ".3")?;
+        let file3 = File::open(path.to_owned() + ".s2")?;
         let reader3 = BufReader::new(file3);
         let app_size = KeySize::deserialize_unchecked(reader3).unwrap();
-        
-        let file4 = File::open(path.to_owned() + ".4")?;
+        let file4 = File::open(path.to_owned() + ".s3")?;
         let reader4 = BufReader::new(file4);
-        let zkp_params = ProvingKey::<Bn254>::read(reader4, &zkp_size);
-
-        let file5 = File::open(path.to_owned() + ".5")?;
+        let pedersen_size = KeySize::deserialize_unchecked(reader4).unwrap();
+        
+        let file5 = File::open(path.to_owned() + ".p1")?;
         let reader5 = BufReader::new(file5);
-        let app_params = ProvingKey::<Bn254>::read(reader5, &app_size);
+        let zkp_params = ProvingKey::<Bn254>::read(reader5, &zkp_size);
+
+        let file6 = File::open(path.to_owned() + ".p2")?;
+        let reader6 = BufReader::new(file6);
+        let app_params = ProvingKey::<Bn254>::read(reader6, &app_size);
+
+        let file7 = File::open(path.to_owned() + ".p3")?;
+        let reader7 = BufReader::new(file7);
+        let pedersen_params = ProvingKey::<Bn254>::read(reader7, &pedersen_size);
 
         let zkp_cfg = CircomConfig::<Bn254>::load(
             "./circuits/key_derive_js/key_derive.so",
@@ -153,6 +186,14 @@ impl Committee {
             panic!("{:?}", error);
         });
 
+        let pedersen_cfg = CircomConfig::<Bn254>::load(
+            "./circuits/pedersen_commit_js/pedersen_commit.so",
+            "./circuits/pedersen_commit.r1cs",
+        )
+        .unwrap_or_else(|error| {
+            panic!("{:?}", error);
+        });
+
         Ok(Committee {
             tpke_sec: p1.tpke_sec,
             ca_tree: p1.ca_tree,
@@ -161,6 +202,8 @@ impl Committee {
             zkp_params,
             app_cfg,
             app_params,
+            pedersen_cfg,
+            pedersen_params,
             tpke_key: p1.tpke_key,
         })
     }
@@ -192,6 +235,12 @@ impl Committee {
         let pvk = prepare_verifying_key(&self.app_params.vk);
 
         verify_proof(&pvk, &appkey.proof, &appkey.pub_inputs).unwrap()
+    }
+
+    pub fn verify_identity_proof(&self, public_inputs: Vec<Fr>, proof: &Proof<Bn254>) -> bool {
+        let pvk = prepare_verifying_key(&self.pedersen_params.vk);
+
+        verify_proof(&pvk, proof, &public_inputs).unwrap()
     }
 
     pub fn decrypt_shard(&self, c1: &Point) -> Point {

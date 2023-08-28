@@ -605,6 +605,102 @@ contract IdentityManager is AccessControl {
         }
     }
 
+    function _verifyIdentity(uint256 Ax, uint256 Ay, uint256 lrcm, Proof memory proof) private view returns (bool) {
+        unchecked {
+            bool success;
+            uint256[11] memory ic = [21608667410711496812882370846235082219809050337084794157590759186282637585344, 
+                                    8384970959349601680244718450283120484320605195854625117378385026013772292021,
+                                    12930562548973283330975689962732440629491891663905338974653083221514519265377,
+                                    8541024393053639618711371261917675935279102263704358351483488059897820955759,
+                                    Ax,
+                                    10609360200435912527995129309664390933531648009707591003577368789200152017717,
+                                    14180162505845651140956990310649386789331886882569317105763202670045449480192,
+                                    Ay,
+                                    16062641557297711677740458410901445049075987379407037317083259568574001699538,
+                                    11777838497844809403393627126455609270770258213121070946946596242813847185727,
+                                    lrcm];
+ 
+            uint256[4] memory addInput = [ic[0], ic[1], 0, 0];
+
+            for (uint256 i = 2; i < 11; i += 3) {
+                // solium-disable-next-line security/no-inline-assembly
+                assembly {
+                    // mul
+                    success := staticcall(sub(gas(), 2000), 7, add(ic, shl(5, i)), 0x80, add(addInput, 64), 0x60)
+                    // Use "invalid" to make gas estimation work
+                    switch success
+                        case 0 {
+                            invalid()
+                        }
+                    // add
+                    success := staticcall(sub(gas(), 2000), 6, addInput, 0xc0, addInput, 0x60)
+                    // Use "invalid" to make gas estimation work
+                    switch success
+                        case 0 {
+                            invalid()
+                        }
+                }
+            }
+
+            G1Point memory nA = negate(proof.A);
+
+            uint256[1] memory out;
+            // solium-disable-next-line security/no-inline-assembly
+            assembly {
+                let input_ptr := mload(0x40)
+                let p := mload(proof)
+                mstore(input_ptr, mload(nA))
+                mstore(add(input_ptr, 32), mload(add(nA, 32)))
+                mstore(add(input_ptr, 64), mload(add(p, 128)))
+                mstore(add(input_ptr, 96), mload(add(p, 160)))
+                mstore(add(input_ptr, 128), mload(add(p, 192)))
+                mstore(add(input_ptr, 160), mload(add(p, 224)))
+
+                mstore(add(input_ptr, 192), 12384001975923688725549742349895603667455215160914868304700754701164505642909)
+                mstore(add(input_ptr, 224), 5975026680599206326232695526971437334542177145566564851398527296992076315415)
+                mstore(add(input_ptr, 256), 13944611227234014573879338971726596196482551298890971838068705721028877203212)
+                mstore(add(input_ptr, 288), 4409934194387708543469033564486655569509854572986772143714411625202809918632)
+                mstore(add(input_ptr, 320), 11527400980324097681578115660111103028502187793758840400974727595583940835735)
+                mstore(add(input_ptr, 352), 14351083625812150963808759664503111953747850513047595535267643152793025353683)
+
+                mstore(add(input_ptr, 384), mload(addInput))
+                mstore(add(input_ptr, 416), mload(add(addInput, 32)))
+                mstore(add(input_ptr, 448), 11941059669465163061853561469820256147437355156173567052685494753916367262469)
+                mstore(add(input_ptr, 480), 16035318089773333271556401822323971304811351096893027030165750226014290706105)
+                mstore(add(input_ptr, 512), 18387868787256835186818573036147744300492166721630369292388153019641797323074)
+                mstore(add(input_ptr, 544), 14073326839883679256308089936028750274974042315401580191367769290002278472958)
+
+                mstore(add(input_ptr, 576), mload(add(p, 256)))
+                mstore(add(input_ptr, 608), mload(add(p, 288)))
+                mstore(add(input_ptr, 640), 19708058406394478327149338044055579191693306402236207449279510091971281200620)
+                mstore(add(input_ptr, 672), 5240669643643026443632390885206189492435129263715881989848944311893357519426)
+                mstore(add(input_ptr, 704), 19413083123968390435388334866014389827628549280403785341773303949986021491035)
+                mstore(add(input_ptr, 736), 3808730047386445717105598783484442401127247732841039383203424346271425442004)
+
+                success := staticcall(
+                    sub(gas(), 2000),
+                    8,
+                    input_ptr,
+                    768,
+                    out,
+                    0x20
+                )
+                // Use "invalid" to make gas estimation work
+                switch success
+                    case 0 {
+                        invalid()
+                    }
+            }
+
+            return out[0] != 0;
+        }
+    }
+
+    function verifyIdentity(uint256 Ax, uint256 Ay, uint256 lrcm, Proof memory proof) external {
+        require(_verifyIdentity(Ax, Ay, lrcm, proof), "Invalid Proof!");
+        emit IdentityVerified(Ax, Ay, lrcm);
+    }
+
     function verifyAppkey(address user, uint256 appkey, uint256 appid, Proof memory proof) external view returns (bool) {
         return _verifyAppkey(user, appkey, appid, proof);
     }
@@ -630,4 +726,5 @@ contract IdentityManager is AccessControl {
     event UserMarked(uint256 indexed c1y, address user);
     event rootsUpdate(uint256 version, uint256 root1, uint256 root2);
     event AddressRevoke(address indexed user);
+    event IdentityVerified(uint256 indexed Ax, uint256 indexed Ay, uint256 lrcm);
 }

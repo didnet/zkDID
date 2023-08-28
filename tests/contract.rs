@@ -98,9 +98,13 @@ async fn test_contract() -> Result<()> {
     cm2.update_zk_param(cm1.zkp_params.clone());
     cm2.update_app_param(cm1.app_params.clone());
 
+    cm1.save("./data/test_cm1").unwrap();
+    // assert!(false);
+
     println!("start to set vk:");
     let _res = cm1.set_derive_vk(contract_address, client.clone()).await?;
     let _res = cm1.set_appkey_vk(contract_address, client.clone()).await?;
+    // assert!(false);
     let _res = cm1.set_tpke_pub(contract_address, client.clone()).await?;
 
     println!("Init committee finish!");
@@ -115,11 +119,11 @@ async fn test_contract() -> Result<()> {
 
     println!("Init CA finish!");
 
-    // cm1.save("./cm1.tmp")?;
-    // cm2.save("./cm2.tmp")?;
-    // ca.save("./ca.tmp")?;
+    cm1.save("./data/test_cm1").unwrap();
 
-    // println!("Saved!");
+    ca.save("./ca.tmp")?;
+
+    println!("Saved!");
 
     // gen credential
     let mut user = Client::new(tpke_key);
@@ -219,7 +223,7 @@ async fn test_contract() -> Result<()> {
 
 #[tokio::test]
 async fn bench_all() -> Result<()> {
-    let contract_address = "15f2c8203856d3e66DdbBf6738Ae362CD0528691";
+    let contract_address = "7B52Daaa7654629DC7d5beFEd31162FAadbeB159";
     // launch the network & compile the verifier
     let provider = Provider::<Http>::try_from("https://bsc-testnet.blockpi.network/v1/rpc/public")?
         .interval(Duration::from_millis(10u64));
@@ -232,132 +236,144 @@ async fn bench_all() -> Result<()> {
     let client = Arc::new(client);
     
     println!("1. Start setting up the committee: ");
-    let mut cm1 = Committee::load("./data/test_cm.bak")?;
+    let mut cm1 = Committee::load("./data/test_cm")?;
     // let cm2 = Committee::load("./data/tcm2.tmp")?;
     let cm2 = cm1.clone();
     println!("1. The committee has been set up.");
     
     println!("2. Start setting up CA: ");
     let mut ca = CA::load("./data/test_ca.bak")?;
-    for p in &ca.generators {
-        println!("{:?}, {:?}", p.scalar_x(), p.scalar_y());
-    }
     println!("2. CA has been set up.");
 
-    // println!("3. Start setting up the identity contract:");
-    // // let _res = cm1.set_derive_vk(contract_address, client.clone()).await?;
-    // // let _res = cm1.set_appkey_vk(contract_address, client.clone()).await?;
-    // let _res = cm1.set_tpke_pub(contract_address, client.clone()).await?;
-    // println!("3. The identity contract has been set up.");
+    println!("3. Start setting up the identity contract:");
+    // let _res = cm1.set_derive_vk(contract_address, client.clone()).await?;
+    // let _res = cm1.set_appkey_vk(contract_address, client.clone()).await?;
+    // assert!(false);
+    let _res = cm1.set_tpke_pub(contract_address, client.clone()).await?;
+    println!("3. The identity contract has been set up.");
 
-    // println!("4. Start updating the identity contract:");
-    // let _res = cm1
-    //     .update_roots_hash(get_timestamp(), contract_address, client.clone())
-    //     .await?;
-    // println!("4. The identity contract has been updated.");
+    println!("4. Start updating the identity contract:");
+    let _res = cm1
+        .update_roots_hash(get_timestamp(), contract_address, client.clone())
+        .await?;
+    println!("4. The identity contract has been updated.");
 
-    // // gen credential
-    // println!("5. Start requesting credential");
-    // let mut user = Client::new(cm1.tpke_key.as_ref().unwrap().clone());
-    // let attributes: Vec<BigInt> = (0..8).map(|x| (x + 10).to_bigint().unwrap()).collect();
-    // let expiration = 31536000;
-    // let req = user.request_credential(attributes, expiration, &ca);
-    // let cred = ca.gen_credential(req.clone()).unwrap();
-    // user.fill_credential(cred);
-    // println!("5. Credential generated!");
+    // gen credential
+    println!("5. Start requesting credential");
+    let mut user = Client::new(cm1.tpke_key.as_ref().unwrap().clone());
+    let attributes: Vec<BigInt> = (0..8).map(|x| (x + 10).to_bigint().unwrap()).collect();
+    let expiration = 31536000;
+    let req = user.request_credential(attributes, expiration, &ca);
+    let cred = ca.gen_credential(req.clone()).unwrap();
+    user.fill_credential(cred);
+    println!("5. Credential generated!");
 
-    // // gen psedonym
-    // print!("6. Start to generate psedonyms: ");
-    // let time_reserve = 1000;
-    // let user_address =
-    //     BigInt::from_str("739337313385053266296758871368793790953719109687").unwrap();
-    // // let req2 = user.derive_identity(&cm1, &req.master_key_g, time_reserve, &address, num);
-    // let sn = user
-    //     .register(
-    //         &cm1,
-    //         &req.master_key_g,
-    //         time_reserve,
-    //         &user_address,
-    //         contract_address,
-    //         client.clone(),
-    //     )
-    //     .await?;
-    // println!("6. pseudonym 1 generated.");
+    // gen psedonym
+    print!("6. Start to generate psedonyms: ");
+    let time_reserve = 1000;
+    let user_address =
+        BigInt::from_str("739337313385053266296758871368793790953719109687").unwrap();
+    // let req2 = user.derive_identity(&cm1, &req.master_key_g, time_reserve, &address, num);
+    let sn = user
+        .register(
+            &cm1,
+            &req.master_key_g,
+            time_reserve,
+            &user_address,
+            contract_address,
+            client.clone(),
+        )
+        .await?;
+    println!("6. pseudonym 1 generated.");
 
-    // let wallet2 = "227db26d4fdf8470567914916252422fa7a7a98499beca9f4bd85f4d25bc5cf6"
-    //     .parse::<LocalWallet>()?;
-    // // let address = contract_address.parse::<Address>()?;
+    let wallet2 = "227db26d4fdf8470567914916252422fa7a7a98499beca9f4bd85f4d25bc5cf6"
+        .parse::<LocalWallet>()?;
+    // let address = contract_address.parse::<Address>()?;
 
-    // let client2 = SignerMiddleware::new(provider, wallet2.with_chain_id(97u64));
-    // let client2 = Arc::new(client2);
-    // let user_address2 = BigInt::from_str("1930620666092389790692418058692409015506454564").unwrap();
-    // let time_reserve = 100;
-    // // let req2 = user.derive_identity(&cm1, &req.master_key_g, time_reserve, &address, num);
-    // let _sn2 = user
-    //     .register(
-    //         &cm1,
-    //         &req.master_key_g,
-    //         time_reserve,
-    //         &user_address2,
-    //         contract_address,
-    //         client2.clone(),
-    //     )
-    //     .await?;
-    // println!("6. pseudonym 2 generated.");
+    let client2 = SignerMiddleware::new(provider, wallet2.with_chain_id(97u64));
+    let client2 = Arc::new(client2);
+    let user_address2 = BigInt::from_str("1930620666092389790692418058692409015506454564").unwrap();
+    let time_reserve = 100;
+    // let req2 = user.derive_identity(&cm1, &req.master_key_g, time_reserve, &address, num);
+    let _sn2 = user
+        .register(
+            &cm1,
+            &req.master_key_g,
+            time_reserve,
+            &user_address2,
+            contract_address,
+            client2.clone(),
+        )
+        .await?;
+    println!("6. pseudonym 2 generated.");
 
-    // println!("7. Start to response to Sybil-resistance: ");
-    // let appid = BigInt::from_str("994862232198212916674956859767646391285724603386").unwrap();
-    // let _res = user
-    //     .send_appkey(
-    //         &cm1,
-    //         &req.master_key_g,
-    //         &sn,
-    //         &appid,
-    //         contract_address,
-    //         client.clone(),
-    //     )
-    //     .await?;
-    // println!("7. proof accepted.");
+    println!("7. Start to response to Sybil-resistance: ");
+    let appid = BigInt::from_str("994862232198212916674956859767646391285724603386").unwrap();
+    let _res = user
+        .send_appkey(
+            &cm1,
+            &req.master_key_g,
+            &sn,
+            &appid,
+            contract_address,
+            client.clone(),
+        )
+        .await?;
+    println!("7. proof accepted.");
 
-    // println!("8. Start to audit:");
-    // let user_meta = cm1
-    //     .get_user_meta(
-    //         "8181082017346679045203273291153336789837",
-    //         contract_address,
-    //         client.clone(),
-    //     )
-    //     .await?
-    //     .unwrap();
-    // let cipher1 = user_meta.to_cipher();
-    // let k1 = cm1.decrypt_shard(&cipher1.c1);
-    // let k2 = cm2.decrypt_shard(&cipher1.c1);
+    println!("8. Start to prove identity attributes:");
+    let _res = user
+        .verify_identity(
+            &cm1,
+            &req.master_key_g,
+            &sn,
+            (0..8).map(|x| (x + 1).to_bigint().unwrap()).collect(),
+            (0..8).map(|x| (x + 20).to_bigint().unwrap()).collect(),
+            contract_address,
+            client.clone(),
+        )
+        .await?;
+    println!("8. proof accepted.");
 
-    // let (m1, m2) = cipher1.decrypt(vec![&k1, &k2], &user_address);
+    println!("9. Start to audit:");
+    let user_meta = cm1
+        .get_user_meta(
+            "8181082017346679045203273291153336789837",
+            contract_address,
+            client.clone(),
+        )
+        .await?
+        .unwrap();
+    let cipher1 = user_meta.to_cipher();
+    let k1 = cm1.decrypt_shard(&cipher1.c1);
+    let k2 = cm2.decrypt_shard(&cipher1.c1);
 
-    // assert_eq!(m2, ca.pubkey());
+    let (m1, m2) = cipher1.decrypt(vec![&k1, &k2], &user_address);
 
-    // let user_info = ca.get_user_info(&m1).unwrap();
-    // println!("8. User info revealed");
+    assert_eq!(m2, ca.pubkey());
+
+    let user_info = ca.get_user_info(&m1).unwrap();
+    println!("9. User info revealed");
     
-    // println!("9. Start to trace user: ");
-    // let k2_1 = cm1.decrypt_shard(&user_info.cipher.c1);
-    // let k2_2 = cm2.decrypt_shard(&user_info.cipher.c1);
+    println!("10. Start to trace user: ");
+    let k2_1 = cm1.decrypt_shard(&user_info.cipher.c1);
+    let k2_2 = cm2.decrypt_shard(&user_info.cipher.c1);
 
-    // let beta = user_info.cipher.decrypt(vec![&k2_1, &k2_2]).scalar_y();
+    let beta = user_info.cipher.decrypt(vec![&k2_1, &k2_2]).scalar_y();
 
-    // let derived_address = cm1
-    //     .get_derived_address(&beta, contract_address, client.clone())
-    //     .await?;
-    // println!("9. all pseudonyms: {:?}", derived_address);
+    let derived_address = cm1
+        .get_derived_address(&beta, contract_address, client.clone())
+        .await?;
+    println!("10. all pseudonyms traced: {:?}", derived_address);
     
-    // println!("10. Start to revoke user:");
-    // println!("10.1 Start to revoke credential:");
-    // let _res = cm1.revoke_credential(get_timestamp(), vec![m1], contract_address, client.clone()).await?;
-    // println!("10.1 Credential revoked!");
-    // println!("10.2 Start to revoke pesudonyms:");
-    // let _res = cm1
-    //     .revoke_user(derived_address, contract_address, client.clone())
-    //     .await?;
-    // println!("10.2 Pesudonyms revoked.");
+    println!("11. Start to revoke user:");
+    println!("11.1 Start to revoke credential:");
+    let _res = cm1.revoke_credential(get_timestamp(), vec![m1], contract_address, client.clone()).await?;
+    println!("11.1 Credential revoked!");
+    println!("11.2 Start to revoke pesudonyms:");
+    let _res = cm1
+        .revoke_user(derived_address, contract_address, client.clone())
+        .await?;
+    println!("11.2 Pesudonyms revoked.");
     Ok(())
 }

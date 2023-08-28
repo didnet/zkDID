@@ -129,6 +129,34 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         );
         Ok(true)
     }
+
+    async fn do_veriy_identity<P: Into<ethereum::Proof>>(
+        &self,
+        ax: &BigInt,
+        ay: &BigInt,
+        lrcm: &BigInt,
+        proof: P,
+    ) -> Result<bool> {
+        // convert into the expected format by the contract
+        let proof = proof.into().into();
+        let ax_e = U256::from_little_endian(&ax.to_bytes_le().1);
+        let ay_e = U256::from_little_endian(&ay.to_bytes_le().1);
+        let lrcm_e = U256::from_little_endian(&lrcm.to_bytes_le().1);
+
+        // query the contract
+        let _res = self
+            .verify_identity(ax_e, ay_e, lrcm_e, proof)
+            .send()
+            .await?
+            .await?;
+        let _res = _res.unwrap();
+        println!(
+            "tx_hash: {:?}, Gas_used: {:?}",
+            _res.transaction_hash, _res.gas_used
+        );
+        Ok(true)
+    }
+
     async fn do_set_derive_vk<VK: Into<ethereum::VerifyingKey>>(&self, vk: VK) -> Result<bool> {
         // convert into the expected format by the contract
         let vk = vk.into().into();
@@ -146,6 +174,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         // convert into the expected format by the contract
         let vk = vk.into().into();
         // query the contract
+        println!("app: {:?}", vk);
         let _res = self.set_appkey_vk(vk).send().await?.await?;
         let _res = _res.unwrap();
         println!(

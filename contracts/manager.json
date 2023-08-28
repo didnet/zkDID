@@ -47,6 +47,31 @@
 		"inputs": [
 			{
 				"indexed": true,
+				"internalType": "uint256",
+				"name": "Ax",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "Ay",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "lrcm",
+				"type": "uint256"
+			}
+		],
+		"name": "IdentityVerified",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
 				"internalType": "bytes32",
 				"name": "role",
 				"type": "bytes32"
@@ -1294,6 +1319,87 @@
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "Ax",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "Ay",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "lrcm",
+				"type": "uint256"
+			},
+			{
+				"components": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point",
+						"name": "A",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256[2]",
+								"name": "X",
+								"type": "uint256[2]"
+							},
+							{
+								"internalType": "uint256[2]",
+								"name": "Y",
+								"type": "uint256[2]"
+							}
+						],
+						"internalType": "struct IdentityManager.G2Point",
+						"name": "B",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "X",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "Y",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct IdentityManager.G1Point",
+						"name": "C",
+						"type": "tuple"
+					}
+				],
+				"internalType": "struct IdentityManager.Proof",
+				"name": "proof",
+				"type": "tuple"
+			}
+		],
+		"name": "verifyIdentity",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ]

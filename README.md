@@ -31,6 +31,12 @@ cargo build --release
 cargo install --path circom
 ```
 
+### Building circom
+
+```bash
+circom --r1cs --wasm pedersen_commit.circom
+```
+
 ## Test and Benchmark
 
 Hades is implemented using Rust and Solidity. You can run it with:
