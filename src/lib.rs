@@ -15,6 +15,7 @@ pub mod committee_client;
 pub mod merkle_tree;
 pub mod tpke;
 pub mod user_client;
+pub mod bench;
 
 pub fn get_timestamp() -> u64 {
     let start = SystemTime::now();
@@ -174,7 +175,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         // convert into the expected format by the contract
         let vk = vk.into().into();
         // query the contract
-        println!("app: {:?}", vk);
+        // println!("app: {:?}", vk);
         let _res = self.set_appkey_vk(vk).send().await?.await?;
         let _res = _res.unwrap();
         println!(

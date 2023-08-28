@@ -321,7 +321,7 @@ async fn bench_all() -> Result<()> {
         .await?;
     println!("7. proof accepted.");
 
-    println!("8. Start to prove identity attributes:");
+    println!("8. Start to prove identity attributes (Selective disclosure):");
     let _res = user
         .verify_identity(
             &cm1,
