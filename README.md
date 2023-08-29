@@ -1,9 +1,9 @@
 # Hades
-Hades is an practical decentralized identity system that supports privacy-preserving, full accountability and Fine-gained sybil-resistance.
+Hades is a practical decentralized identity system that supports privacy-preserving, full accountability, and Fine-gained sybil-resistance.
 
 ## Structure
 
-**contracts/manager.sol** is the Identity Contract can run on EVM-Powered chains.
+**contracts/manager.sol** is the Identity Contract that can run on EVM-Powered chains.
 
 **src/ca_client.rs** is a client for CA.
 
@@ -11,7 +11,7 @@ Hades is an practical decentralized identity system that supports privacy-preser
 
 **src/user_client.rs** is a client for the users.
 
-**circuits/xxx.circom** are zkp circuits written in Circom.
+**circuits/xxx.circom** are zero-knowledge circuits written in Circom.
 
 ## How to build
 
