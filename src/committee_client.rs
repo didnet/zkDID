@@ -52,8 +52,8 @@ impl Committee {
 
         //TODO: make trust setup
         let cfg = CircomConfig::<Bn254>::load(
-            "./circuits/key_derive_js/key_derive.so",
-            "./circuits/key_derive.r1cs",
+            "./circuits/pseudonym_check.so",
+            "./circuits/pseudonym_check.r1cs",
         )
         .unwrap_or_else(|error| {
             panic!("{:?}", error);
@@ -66,8 +66,8 @@ impl Committee {
         let params = generate_random_parameters::<Bn254, _, _>(circom, &mut rng).unwrap();
 
         let app_cfg = CircomConfig::<Bn254>::load(
-            "./circuits/app_key_js/app_key.so",
-            "./circuits/app_key.r1cs",
+            "./circuits/sybil_check.so",
+            "./circuits/sybil_check.r1cs",
         )
         .unwrap_or_else(|error| {
             panic!("{:?}", error);
@@ -80,7 +80,7 @@ impl Committee {
         let app_params = generate_random_parameters::<Bn254, _, _>(circom, &mut rng).unwrap();
 
         let pedersen_cfg = CircomConfig::<Bn254>::load(
-            "./circuits/pedersen_commit_js/pedersen_commit.so",
+            "./circuits/pedersen_commit.so",
             "./circuits/pedersen_commit.r1cs",
         )
         .unwrap_or_else(|error| {
@@ -171,23 +171,23 @@ impl Committee {
         let pedersen_params = ProvingKey::<Bn254>::read(reader7, &pedersen_size);
 
         let zkp_cfg = CircomConfig::<Bn254>::load(
-            "./circuits/key_derive_js/key_derive.so",
-            "./circuits/key_derive.r1cs",
+            "./circuits/pseudonym_check.so",
+            "./circuits/pseudonym_check.r1cs",
         )
         .unwrap_or_else(|error| {
             panic!("{:?}", error);
         });
 
         let app_cfg = CircomConfig::<Bn254>::load(
-            "./circuits/app_key_js/app_key.so",
-            "./circuits/app_key.r1cs",
+            "./circuits/sybil_check.so",
+            "./circuits/sybil_check.r1cs",
         )
         .unwrap_or_else(|error| {
             panic!("{:?}", error);
         });
 
         let pedersen_cfg = CircomConfig::<Bn254>::load(
-            "./circuits/pedersen_commit_js/pedersen_commit.so",
+            "./circuits/pedersen_commit.so",
             "./circuits/pedersen_commit.r1cs",
         )
         .unwrap_or_else(|error| {

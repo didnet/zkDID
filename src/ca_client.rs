@@ -82,7 +82,7 @@ impl CA {
             .collect();
 
         let cfg = CircomConfig::<Bn254>::load(
-            "./circuits/tpke_single_js/tpke_single.so",
+            "./circuits/tpke_single.so",
             "./circuits/tpke_single.r1cs",
         )
         .unwrap_or_else(|error| {
@@ -151,7 +151,7 @@ impl CA {
         let zkp_params = ProvingKey::<Bn254>::read(reader3, &zkp_size);
 
         let cfg = CircomConfig::<Bn254>::load(
-            "./circuits/tpke_single_js/tpke_single.so",
+            "./circuits/tpke_single.so",
             "./circuits/tpke_single.r1cs",
         )
         .unwrap_or_else(|error| {

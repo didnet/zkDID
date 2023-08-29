@@ -11,7 +11,16 @@ Hades is an practical decentralized identity system that supports privacy-preser
 
 **src/user_client.rs** is a client for the users.
 
+**circuits/xxx.circom** are zkp circuits written in Circom.
+
 ## How to build
+
+### Installing dependency
+
+```bash
+sudo apt update
+sudo apt install build-essential
+```
 
 ### Installing Rust
 
@@ -20,7 +29,7 @@ Hades SDK is written in Rust. To have Rust available in your system, you can ins
 ```bash
 curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 ```
-### Installing circom
+### Installing circom (can skip)
 
 Hades zkp circuits are written in circom. To have circom available in your system, you can install circom:
 
@@ -31,44 +40,73 @@ cargo build --release
 cargo install --path circom
 ```
 
-### Building circom
+### Building circom (can skip)
 
 ```bash
-circom --r1cs --wasm pedersen_commit.circom
+circom --r1cs --wasm circuits/pseudonym_check.circom
+circom --r1cs --wasm circuits/sybil_check.circom
+circom --r1cs --wasm circuits/pedersen_commit.circom
+circom --r1cs --wasm circuits/tpke_single.circom
+```
+
+### Building rust
+
+```bash
+cargo build --release
 ```
 
 ## Test and Benchmark
 
-Hades is implemented using Rust and Solidity. You can run it with:
+Hades is implemented using Rust and Solidity. We have already attached the test data and test accounts; you can use the following commands for testing and benchmark:
 
 ```bash
-cargo test --all
+cargo test --package hades --test contract -- bench_all --exact --nocapture
 ```
 
-### Test results:
+### Test and results:
 
-```c
-start to set vk:
-Set_derive_vk: 0x62e6d57611c4950534f9f4750afbb58908f8ad27d38b522210f21ddda03db163, Gas_used: Some(648420)
-Set_appkey_vk: 0xe1d98ac785309aa5570dffc2ae6bd6ea043902a4f5eb7fb57883163bf9f84cb7, Gas_used: Some(523660)
-Set_tpke_pub: 0x44ad4eb05239c52c4903136bd87018eddf4ffc58c65877fd204fcd86b4fab096, Gas_used: Some(63664)
-start to set root:
-Update_roots_hash: 0x7526c066d283da64b2af8db2391febd4f9e9722f536f41a3312737294c9905b7, Gas_used: Some(130207)
-Init CA finish!
-Credential proof time: 466 ms
-Gen credential finish!
-Register proof time: 1912 ms
-Register: 0xd9e4b75b2bb2960242ab347b9c78140ab1aaab4f359485a036a21550cee0bed8, Gas_used: Some(354942)
-Identity derive finish!
-Appkey proof time: 468 ms
-Set_appkey: 0x15c908e5d45ddd49ac801ab1b1f040bc34ccdfd96d7fc961e40fd005d20503eb, Gas_used: Some(248514)
-Register proof time: 1873 ms
-Register: 0xc32b3bb63c95fed992a7624f97f00fda49c7c5ab8b052f6b3a38718d58a4efe0, Gas_used: Some(339978)
-Identity 2 derive finish!
-Begin to revoke:
-derived_address: [0x8181082017346679045203273291153336789837, 0x0056927037680436204345599445309492724824]
-revoke_user: 0x26f8eb0ecbb4490ccd0ebafa026d0e21d3a01fc71bba7701f37d22f159230f24, Gas_used: Some(28486)
-test test_contract_saved ... ok
+```bash
+running 1 test
+1. Start setting up the committee: 
+1. The committee has been set up.
+2. Start setting up CA: 
+2. CA has been set up.
+3. Start setting up the identity contract:
+tx_hash: 0x1942bb3d258c1cca263f8177751c20b9fe9a814080ccf58b66fd5a1d5c355f1e, Gas_used: Some(29364)
+3. The identity contract has been set up.
+4. Start updating the identity contract:
+tx_hash: 0xe9153b33a1ebb8b86cd7c9f20a3b42c1b8bf4f52ec19a048305fd9b363e78358, Gas_used: Some(88943)
+4. The identity contract has been updated.
+5. Start requesting credential
+Credential request proof time: 318 ms
+5. Credential generated!
+6. Start to generate psedonyms: Pseudonym register proof time: 1470 ms
+tx_hash: 0x6a5d2672811b9cb1aa576725846948d0a3b92f444b3e88cb8c585a6e24445eaa, Gas_used: Some(337101)
+6. pseudonym 1 generated.
+Pseudonym register proof time: 1460 ms
+test bench_all has been running for over 60 seconds
+tx_hash: 0x7bc1356d11c4bdaa367587d1a748c75a20e13e69dd112243e3840ab9e2474506, Gas_used: Some(337089)
+6. pseudonym 2 generated.
+7. Start to response to Sybil-resistance: 
+Sybil-resistance proof time: 324 ms
+tx_hash: 0x79d3c4110a1a617a5f570dc3381da0d66e9baac322fe3293be3457d4d1252f3d, Gas_used: Some(249614)
+7. proof accepted.
+8. Start to prove identity attributes (Selective disclosure):
+Identity proof time: 929 ms
+tx_hash: 0x24319bb93fe2f490c953cd225c62889093ac51fcbc227a96864caddaec9703b0, Gas_used: Some(232596)
+8. proof accepted.
+9. Start to audit:
+9. User info revealed
+10. Start to trace user: 
+10. all pseudonyms traced: [0x8181082017346679045203273291153336789837, 0x0056927037680436204345599445309492724824]
+11. Start to revoke user:
+11.1 Start to revoke credential:
+tx_hash: 0x210c0715b063e7a88b6fe28a252d737d6270c38c655c1885bfdd5f0ae3c6489f, Gas_used: Some(88943)
+11.1 Credential revoked!
+11.2 Start to revoke pesudonyms:
+tx_hash: 0x78e2d57b35e4257a0c454c86286b2fd7bf820dd0dcf2e059592d0bfd65afcf7e, Gas_used: Some(46617)
+11.2 Pesudonyms revoked.
+test bench_all ... ok
 ```
 
 ### Circuits  constraints
@@ -87,7 +125,7 @@ wires: 3910
 labels: 28453
 ```c
 
-Pseudonyms derivation:
+Pseudonyms check:
 
 ```c
 template instances: 333
@@ -101,7 +139,7 @@ wires: 32004
 labels: 144153
 ```
 
-Application key generation:
+sybil-check:
 
 ```c
 template instances: 93
@@ -118,13 +156,13 @@ labels: 19926
 Selective disclosure
 
 ```c
-template instances: 14
-non-linear constraints: 18778
+template instances: 99
+non-linear constraints: 16240
 linear constraints: 0
-public inputs: 22
+public inputs: 18
 public outputs: 0
-private inputs: 11
+private inputs: 10
 private outputs: 0
-wires: 18759
-labels: 141917
+wires: 16225
+labels: 120331
 ```
