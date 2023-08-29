@@ -29,7 +29,7 @@ Hades SDK is written in Rust. To have Rust available in your system, you can ins
 ```bash
 curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 ```
-### Installing circom (can skip)
+### Installing circom
 
 Hades zkp circuits are written in circom. To have circom available in your system, you can install circom:
 
@@ -40,7 +40,7 @@ cargo build --release
 cargo install --path circom
 ```
 
-### Building circom (can skip)
+### Building circom
 
 ```bash
 circom --r1cs --wasm circuits/pseudonym_check.circom
@@ -49,21 +49,26 @@ circom --r1cs --wasm circuits/pedersen_commit.circom
 circom --r1cs --wasm circuits/tpke_single.circom
 ```
 
-### Building rust
+### Building Hades
 
 ```bash
+https://github.com/didnet/Hades.git
+cd Hades
 cargo build --release
 ```
 
 ## Test and Benchmark
 
-Hades is implemented using Rust and Solidity. We have already attached the test data and test accounts; you can use the following commands for testing and benchmark:
+Hades is implemented using Rust and Solidity. 
+To simplify the evaluation, we have consolidated all the processes into one test function and also provided some BSC Testnet accounts. 
+The command listed below can be utilized to run the test.
 
 ```bash
 cargo test --package hades --test contract -- bench_all --exact --nocapture
 ```
 
-### Test and benchmark results:
+Below are the test results, which are presented in Tables 1 and Table 2 of the paper.
+Note that due to differences in CPU performance, the test results may vary across different running platforms.
 
 ```bash
 running 1 test
@@ -111,9 +116,15 @@ test bench_all ... ok
 
 ### Circuits  constraints
 
-Credential generation:
+Circuit constraint information can be accessed using the Circom compiler. Following are the specific commands and their associated output.
+This data is presented in the first column of Table 1 in the paper.
 
-```c
+**Credential generation:**
+
+```bash
+circom --r1cs --wasm circuits/tpke_single.circom
+
+outputs:
 template instances: 19
 non-linear constraints: 3907
 linear constraints: 0
@@ -123,11 +134,14 @@ private inputs: 3
 private outputs: 0
 wires: 3910
 labels: 28453
-```c
+```
 
-Pseudonyms check:
+**Pseudonyms registration:**
 
-```c
+```bash
+circom --r1cs --wasm circuits/pseudonym_check.circom
+
+outputs:
 template instances: 333
 non-linear constraints: 31951
 linear constraints: 0
@@ -139,9 +153,12 @@ wires: 32004
 labels: 144153
 ```
 
-sybil-check:
+**Sybil-resistance:**
 
-```c
+```bash
+circom --r1cs --wasm circuits/sybil_check.circom
+
+outputs:
 template instances: 93
 non-linear constraints: 4291
 linear constraints: 0
@@ -153,9 +170,12 @@ wires: 4288
 labels: 19926
 ```
 
-Selective disclosure
+**Selective disclosure:**
 
-```c
+```bash
+circom --r1cs --wasm circuits/pedersen_commit.circom
+
+outputs:
 template instances: 99
 non-linear constraints: 15856
 linear constraints: 0
