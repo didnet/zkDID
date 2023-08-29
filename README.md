@@ -1,6 +1,7 @@
 # Hades
 Hades is a practical decentralized identity system that supports privacy-preserving, full accountability, and Fine-gained sybil-resistance.
 
+
 ## Structure
 
 **contracts/manager.sol** is the Identity Contract that can run on EVM-Powered chains.
@@ -12,6 +13,8 @@ Hades is a practical decentralized identity system that supports privacy-preserv
 **src/user_client.rs** is a client for the users.
 
 **circuits/xxx.circom** are zero-knowledge circuits written in Circom.
+
+
 
 ## How to build
 
@@ -57,15 +60,24 @@ cd Hades
 cargo build --release
 ```
 
+
+
 ## Test and Benchmark
 
 Hades is implemented using Rust and Solidity. 
 To simplify the evaluation, we have consolidated all the processes into one test function and also provided some BSC Testnet accounts. 
 The command listed below can be utilized to run the test.
 
+```
+cd Hades
+cargo build --release
+target/release/hades
+```
+OR
 ```bash
 cargo test --package hades --test contract -- bench_all --exact --nocapture
 ```
+Since the second method runs in debug mode, its evaluation results are not accurate (slower).
 
 Below are the test results, which are presented in Tables 1 and Table 2 of the paper.
 Note that due to differences in CPU performance, the test results may vary across different running platforms.
