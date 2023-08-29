@@ -30,7 +30,7 @@ pub fn convert(from: impl AsRef<std::path::Path>, to: impl AsRef<std::path::Path
 }
 
 abigen!(IdentityManager, "./contracts/manager.json");
-use identity_manager::{G1Point, G2Point, Proof, VerifyingKey};
+// use identity_manager::{G1Point, G2Point, Proof, VerifyingKey};
 use tpke::CipherDual;
 
 impl From<ethereum::G1> for G1Point {
