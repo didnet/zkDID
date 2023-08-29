@@ -63,7 +63,7 @@ Hades is implemented using Rust and Solidity. We have already attached the test 
 cargo test --package hades --test contract -- bench_all --exact --nocapture
 ```
 
-### Test and results:
+### Test and benchmark results:
 
 ```bash
 running 1 test
@@ -157,12 +157,12 @@ Selective disclosure
 
 ```c
 template instances: 99
-non-linear constraints: 16240
+non-linear constraints: 15856
 linear constraints: 0
-public inputs: 18
+public inputs: 3
 public outputs: 0
-private inputs: 10
+private inputs: 25
 private outputs: 0
-wires: 16225
-labels: 120331
+wires: 15841
+labels: 118411
 ```
