@@ -197,6 +197,7 @@ impl Client {
         address: &BigInt,
         n: u64,
     ) -> IdentityRequest {
+        let time_start = SystemTime::now();
         let cs = self.credentials.get_mut(master_key).unwrap();
         let idx = cs.derived_keys.len();
         let sn = poseidon_hash(vec![&cs.beta, &idx.to_bigint().unwrap()]).unwrap();
@@ -282,7 +283,13 @@ impl Client {
 
         let circom = builder.build().unwrap();
         let pub_inputs = circom.get_public_inputs().unwrap();
+
         let proof = prove(circom, &committee.zkp_params, &mut rng).unwrap();
+        
+        println!(
+            "Pseudonym register proof time: {:?} ms",
+            time_start.elapsed().unwrap().as_millis()
+        );
 
         cs.derived_keys.insert(
             sn.clone(),
@@ -405,17 +412,12 @@ impl Client {
 
         let n = contract.num_of_address().call().await?;
 
-        let time_start = SystemTime::now();
         let req = self.derive_identity(
             committee,
             master_key,
             time_reserve,
             user_address,
             n.as_u64(),
-        );
-        println!(
-            "Pseudonym register proof time: {:?} ms",
-            time_start.elapsed().unwrap().as_millis()
         );
 
         let inputs = &req.pub_inputs[..6];

@@ -95,8 +95,8 @@ impl Committee {
 
         Self {
             tpke_sec,
-            ca_tree: MerkleTree::new(20),
-            block_tree: DualTree::new(32),
+            ca_tree: MerkleTree::new(31), // 20
+            block_tree: DualTree::new(41), // 32
             zkp_cfg: cfg,
             zkp_params: params,
             app_cfg,

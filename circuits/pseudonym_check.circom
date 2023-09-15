@@ -243,5 +243,5 @@ template KeyDerive(L1, L2) {
     
 }
 
-component main {public [addr, C1y, C2y, C3y, Aiy, dd, rh] } = KeyDerive(19, 31);
+component main {public [addr, C1y, C2y, C3y, Aiy, dd, rh] } = KeyDerive(30, 40); //19 31
 

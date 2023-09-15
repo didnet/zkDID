@@ -16,7 +16,7 @@ use ethers::{
 use std::{convert::TryFrom, sync::Arc, time::Duration};
 
 pub async fn bench_all() -> Result<()> {
-    let contract_address = "7B52Daaa7654629DC7d5beFEd31162FAadbeB159";
+    let contract_address = "64228D9d16EC3E3dd88AF5d10984be801B1e84Dc";
     // launch the network & compile the verifier
     let provider = Provider::<Http>::try_from("https://bsc-testnet.blockpi.network/v1/rpc/public")?
         .interval(Duration::from_millis(10u64));
@@ -29,19 +29,22 @@ pub async fn bench_all() -> Result<()> {
     let client = Arc::new(client);
     
     println!("1. Start setting up the committee: ");
-    let mut cm1 = Committee::load("./data/test_cm")?;
-    // let cm2 = Committee::load("./data/tcm2.tmp")?;
-    let cm2 = cm1.clone();
+    let mut cm1 = Committee::load("./data/test_cm1")?;
+    let mut cm2 = Committee::load("./data/test_cm2")?;
+    // let cm2 = cm1.clone();
     println!("1. The committee has been set up.");
     
     println!("2. Start setting up CA: ");
     let mut ca = CA::load("./data/test_ca.bak")?;
+    ca.tpke_key = cm1.tpke_key.as_ref().unwrap().clone();
+    println!("2.1 Start adding CA to trusted list: ");
+    cm1.ca_tree.insert_nodes(vec![ca.pubkey().scalar_y()]);
+    cm2.ca_tree.insert_nodes(vec![ca.pubkey().scalar_y()]);
     println!("2. CA has been set up.");
 
     println!("3. Start setting up the identity contract:");
     // let _res = cm1.set_derive_vk(contract_address, client.clone()).await?;
     // let _res = cm1.set_appkey_vk(contract_address, client.clone()).await?;
-    // assert!(false);
     let _res = cm1.set_tpke_pub(contract_address, client.clone()).await?;
     println!("3. The identity contract has been set up.");
 

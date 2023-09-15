@@ -161,7 +161,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
     async fn do_set_derive_vk<VK: Into<ethereum::VerifyingKey>>(&self, vk: VK) -> Result<bool> {
         // convert into the expected format by the contract
         let vk = vk.into().into();
-
+        // println!("derive_vk: {:?}", vk);
         // query the contract
         let _res = self.set_derive_vk(vk).send().await?.await?;
         let _res = _res.unwrap();
