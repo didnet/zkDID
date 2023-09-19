@@ -1,3 +1,6 @@
+// Verify whether the values behind the given Pedersen commitments are all within
+// the specified range.
+
 pragma circom 2.0.0;
 
 include "circomlib/babyjub.circom";

@@ -1,4 +1,6 @@
-// extern crate curve25519_dalek;
+// This file contains code for interacting with the on-chain identity contract,
+// providing the capability to send transactions or query contracts.
+
 use ark_circom::ethereum;
 use baby_jub::Point;
 use color_eyre::Result;
@@ -25,19 +27,24 @@ pub fn get_timestamp() -> u64 {
         .as_secs()
 }
 
+// convert r1cs 
 pub fn convert(from: impl AsRef<std::path::Path>, to: impl AsRef<std::path::Path>) {
     WitnessCalculator::save(from, to).unwrap();
 }
 
+// gen contract abi
 abigen!(IdentityManager, "./contracts/manager.json");
 // use identity_manager::{G1Point, G2Point, Proof, VerifyingKey};
 use tpke::CipherDual;
 
+// struct convert
 impl From<ethereum::G1> for G1Point {
     fn from(src: ethereum::G1) -> Self {
         Self { x: src.x, y: src.y }
     }
 }
+
+// struct convert
 impl From<ethereum::G2> for G2Point {
     fn from(src: ethereum::G2) -> Self {
         // We should use the `.as_tuple()` method which handles converting
@@ -46,6 +53,8 @@ impl From<ethereum::G2> for G2Point {
         Self { x: src.0, y: src.1 }
     }
 }
+
+// struct convert
 impl From<ethereum::Proof> for Proof {
     fn from(src: ethereum::Proof) -> Self {
         Self {
@@ -55,6 +64,8 @@ impl From<ethereum::Proof> for Proof {
         }
     }
 }
+
+// struct convert
 impl From<ethereum::VerifyingKey> for VerifyingKey {
     fn from(src: ethereum::VerifyingKey) -> Self {
         Self {
@@ -68,6 +79,7 @@ impl From<ethereum::VerifyingKey> for VerifyingKey {
 }
 
 impl IdentityFullMeta {
+    // Decompress onchain data
     pub fn to_cipher(&self) -> CipherDual {
         let mut le_bytes = vec![0u8; 32];
         self.c1.to_little_endian(&mut le_bytes);
@@ -85,6 +97,7 @@ impl IdentityFullMeta {
 }
 
 impl<M: Middleware + 'static> IdentityManager<M> {
+    // register pseudonyms
     async fn do_register<I: Into<ethereum::Inputs>, P: Into<ethereum::Proof>>(
         &self,
         proof: P,
@@ -103,7 +116,8 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         );
         Ok(true)
     }
-
+    
+    // push zero-knowledge proof parameters to the identity contract.
     async fn do_set_appkey<P: Into<ethereum::Proof>>(
         &self,
         user: &BigInt,
@@ -117,7 +131,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         let appkey_e = U256::from_little_endian(&appkey.to_bytes_le().1);
         let appid_e = U256::from_little_endian(&appid.to_bytes_le().1);
 
-        // query the contract
+        // send transactions
         let _res = self
             .set_appkey(user_e, appkey_e, appid_e, proof)
             .send()
@@ -130,7 +144,8 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         );
         Ok(true)
     }
-
+    
+    // verify identitys on identity contract
     async fn do_veriy_identity<P: Into<ethereum::Proof>>(
         &self,
         ax: &BigInt,
@@ -144,7 +159,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         let ay_e = U256::from_little_endian(&ay.to_bytes_le().1);
         let lrcm_e = U256::from_little_endian(&lrcm.to_bytes_le().1);
 
-        // query the contract
+        // send transactions
         let _res = self
             .verify_identity(ax_e, ay_e, lrcm_e, proof)
             .send()
@@ -157,7 +172,8 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         );
         Ok(true)
     }
-
+    
+    // push zero-knowledge proof parameters to the identity contract.
     async fn do_set_derive_vk<VK: Into<ethereum::VerifyingKey>>(&self, vk: VK) -> Result<bool> {
         // convert into the expected format by the contract
         let vk = vk.into().into();
@@ -171,6 +187,8 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         );
         Ok(true)
     }
+    
+    // push zero-knowledge proof parameters to the identity contract.
     async fn do_set_appkey_vk<VK: Into<ethereum::VerifyingKey>>(&self, vk: VK) -> Result<bool> {
         // convert into the expected format by the contract
         let vk = vk.into().into();

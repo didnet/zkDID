@@ -1,3 +1,6 @@
+// Verify whether the given ciphertext is the threshold public key
+// encryption of the specified value.
+
 pragma circom 2.0.0;
 
 include "circomlib/babyjub.circom";

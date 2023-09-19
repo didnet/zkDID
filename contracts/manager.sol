@@ -1,3 +1,5 @@
+// This file is the gas-optimized version of the identity management contract.
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 pragma abicoder v2;
@@ -334,11 +336,13 @@ contract IdentityManager is AccessControl {
     constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
-
+    
+    // Configure the public key used in threshold public key encryption.
     function setTpkePub(BabyPoint memory key) external onlyRole(DEFAULT_ADMIN_ROLE) {
         tpkePub = key;
     }
-
+    
+    // update root
     function updateRootsHash(uint256 rh1, uint256 rh2, uint256 version) external {
         require(committeeId[msg.sender] != 0, "not in committee");
         require(rootsApprovers[version][rh1][rh2][msg.sender] == 0, "already approve");
@@ -351,11 +355,13 @@ contract IdentityManager is AccessControl {
         }
         emit rootsUpdate(version, rh1, rh2);
     }
-
+    
+    // set the threshold
     function setBaseNumber(uint256 num) external onlyRole(DEFAULT_ADMIN_ROLE) {
         baseNumber = num;
     }
-
+    
+    // add committee member
     function addCommittee(uint256 _cm) external onlyRole(DEFAULT_ADMIN_ROLE) {
         address cm = address(uint160(_cm));
         require(committeeId[cm] == 0, "already add");
@@ -364,7 +370,8 @@ contract IdentityManager is AccessControl {
         
         committeeId[cm] = numOfCommittee;
     }
-
+    
+    // remove committee member
     function removeCommittee(address cm) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(committeeId[cm] != 0, "not in committee");
         uint256 id = committeeId[cm];
@@ -374,7 +381,8 @@ contract IdentityManager is AccessControl {
         numOfCommittee -= 1;
         committeeId[cm] = 0;
     }
-
+    
+    // set verification key used in pseudonym verification
     function setDeriveVK(VerifyingKey memory vk) external onlyRole(DEFAULT_ADMIN_ROLE) {
         deriveVK.alfa1 = vk.alfa1;
         deriveVK.beta2 = vk.beta2;
@@ -386,6 +394,7 @@ contract IdentityManager is AccessControl {
         }
     }
 
+    // set verification key used in sybil-resistance
     function setAppkeyVK(VerifyingKey memory vk) external onlyRole(DEFAULT_ADMIN_ROLE) {
         appkeyVK.alfa1 = vk.alfa1;
         appkeyVK.beta2 = vk.beta2;
@@ -395,7 +404,8 @@ contract IdentityManager is AccessControl {
             appkeyVK.IC[i] = vk.IC[i];
         }
     }
-
+    
+    // register a pseudonym
     function register(uint256[6] memory input, Proof memory proof) external {
         unchecked {
             require(input.length == 6, "invalid input size");
@@ -452,6 +462,7 @@ contract IdentityManager is AccessControl {
             G1Point memory nA = negate(proof.A);
 
             uint256[1] memory out;
+            // verify proof
             // solium-disable-next-line security/no-inline-assembly
             assembly {
                 let input_ptr := mload(0x40)
@@ -506,7 +517,8 @@ contract IdentityManager is AccessControl {
             emit UserMarked(input[0], msg.sender);
         }
     }
-
+    
+    // verif non-sybil proof
     function _verifyAppkey(address user, uint256 appkey, uint256 appid, Proof memory proof) private view returns (bool) {
         unchecked {
             IdentityMeta memory meta = identityInfo[user]; 
@@ -604,7 +616,8 @@ contract IdentityManager is AccessControl {
             return out[0] != 0;
         }
     }
-
+    
+    // verify identity proof
     function _verifyIdentity(uint256 Ax, uint256 Ay, uint256 lrcm, Proof memory proof) private view returns (bool) {
         unchecked {
             bool success;
@@ -695,16 +708,19 @@ contract IdentityManager is AccessControl {
             return out[0] != 0;
         }
     }
-
+    
+    // Verify the identity assertion.
     function verifyIdentity(uint256 Ax, uint256 Ay, uint256 lrcm, Proof memory proof) external {
         require(_verifyIdentity(Ax, Ay, lrcm, proof), "Invalid Proof!");
         emit IdentityVerified(Ax, Ay, lrcm);
     }
-
+    
+    // verify non-sybil proof
     function verifyAppkey(address user, uint256 appkey, uint256 appid, Proof memory proof) external view returns (bool) {
         return _verifyAppkey(user, appkey, appid, proof);
     }
-
+    
+    // do sybil-resistance
     function setAppkey(uint256 user, uint256 appkey, uint256 appid, Proof memory proof) external {
         unchecked {
             require(_verifyAppkey(address(uint160(user)), appkey, appid, proof), "Invalid Proof!");
@@ -712,7 +728,8 @@ contract IdentityManager is AccessControl {
             emit AppkeySet(address(uint160(user)), appid, appkey);
         }
     }
-
+    
+    // revoke pseudonyms
     function revoke(address[] memory addrs) external {
          require(committeeId[msg.sender] != 0, "not in committee");
          for (uint i = 0; i < addrs.length; ++i) {

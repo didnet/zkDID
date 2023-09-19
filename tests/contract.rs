@@ -1,3 +1,6 @@
+// This is a test file, primarily used to test the interaction functionalities
+// between the client and the identity contract.
+
 use color_eyre::Result;
 
 use hades::ca_client::CA;
@@ -19,6 +22,7 @@ use ethers::{
 use std::{convert::TryFrom, sync::Arc, time::Duration};
 
 #[test]
+// test struct convertion
 fn test_convert() {
     let n1 = BigInt::from_str("739337313385053266296758871368793790953719109687").unwrap();
     let n2 = U256::from_little_endian(&n1.to_bytes_le().1);
@@ -32,6 +36,7 @@ fn test_convert() {
 }
 
 #[test]
+// test H256 struct convertion
 fn test_h256() {
     let n1 = BigInt::from_str("739337313385053266296758871368793790953719109687").unwrap();
     let mut res = [0u8; 32];
@@ -48,9 +53,10 @@ fn test_h256() {
 }
 
 #[tokio::test]
+// test querying onchain events
 async fn test_logs() -> Result<()> {
     let contract_address = "6bb57a2136360F111f98B570b6b6c6a7a62d2067".parse::<Address>()?;
-    // launch the network & compile the verifier
+    // launch the network
     let provider = Provider::<Http>::try_from("https://rpc.ankr.com/fantom_testnet")?
         .interval(Duration::from_millis(10u64));
 
@@ -77,15 +83,15 @@ async fn test_logs() -> Result<()> {
 }
 
 #[tokio::test]
+// Test on-chain contract interactions.
 async fn test_contract() -> Result<()> {
     let contract_address = "5367Dd55bb17FBbB6ee3E67bfAbc4CAE12d476F7";
-    // launch the network & compile the verifier
+    // launch the network
     let provider = Provider::<Http>::try_from("https://rpc.ankr.com/bsc_testnet_chapel")?
         .interval(Duration::from_millis(10u64));
 
     let wallet = "164c8c3b7e2b40c97e4a82d441fa6857288d3e61dbe6fe9c07e97c868b997c48"
         .parse::<LocalWallet>()?;
-    // let address = contract_address.parse::<Address>()?;
 
     let client = SignerMiddleware::new(provider.clone(), wallet.with_chain_id(97u64));
     let client = Arc::new(client);
@@ -223,15 +229,15 @@ async fn test_contract() -> Result<()> {
 }
 
 #[tokio::test]
+// bench on-chain contract interactions.
 async fn bench_all() -> Result<()> {
     let contract_address = "64228D9d16EC3E3dd88AF5d10984be801B1e84Dc";
-    // launch the network & compile the verifier
+    // launch the network
     let provider = Provider::<Http>::try_from("https://bsc-testnet.blockpi.network/v1/rpc/public")?
         .interval(Duration::from_millis(10u64));
 
     let wallet = "164c8c3b7e2b40c97e4a82d441fa6857288d3e61dbe6fe9c07e97c868b997c48"
         .parse::<LocalWallet>()?;
-    // let address = contract_address.parse::<Address>()?;
 
     let client = SignerMiddleware::new(provider.clone(), wallet.with_chain_id(97u64));
     let client = Arc::new(client);
@@ -239,7 +245,6 @@ async fn bench_all() -> Result<()> {
     println!("1. Start setting up the committee: ");
     let mut cm1 = Committee::load("./data/test_cm1")?;
     let mut cm2 = Committee::load("./data/test_cm2")?;
-    // let cm2 = cm1.clone();
     println!("1. The committee has been set up.");
     
     println!("2. Start setting up CA: ");

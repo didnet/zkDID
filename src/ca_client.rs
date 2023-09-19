@@ -1,3 +1,8 @@
+// This file is used to run the Hades CA client, containing all the functions required
+// by Hades CA, including initialization, proof verification, credential issuance,
+// user information storage, user information query, etc. As for how to verify the
+// user's identity, we leave it to the developers.
+
 use crate::get_timestamp;
 use crate::tpke::{Cipher, PublicKey};
 use ark_bn254::Bn254;
@@ -33,24 +38,31 @@ pub struct CA {
     pub blacklist: Vec<Point>,
     pub zkp_cfg: CircomConfig<Bn254>,
     pub zkp_params: ProvingKey<Bn254>,
+    // The public key used in threshold public key encryption.
     pub tpke_key: PublicKey,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+// serialization part 1
 pub struct CAPart1 {
     pub attribute_num: usize,
     pub private_key: PrivateKey,
+    // generators used in pedersen commitment
     pub generators: Vec<Point>,
     pub user_infos: HashMap<Point, UserInfo>,
     pub blacklist: Vec<Point>,
+    // The public key used in threshold public key encryption.
     pub tpke_key: PublicKey,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Credential {
     pub signature: Signature,
+    // master public key
     pub master_key_g: Point,
+    // trapdoor public key
     pub beta_g: Point,
+    // pedersen commitment of identity attributies
     pub attr_commit: Point,
     pub expiration: u64,
 }
@@ -59,18 +71,23 @@ pub struct Credential {
 pub struct CredentialRequest {
     pub master_key_g: Point,
     pub beta_g: Point,
+    // identity attributies
     pub attributes: Vec<BigInt>,
     pub expiration: u64,
+    // cipher of trapdoor
     pub cipher: Cipher,
+    // public key of CA
     pub ca_key: Point,
+    // zero knowledge proof for the cipher
     pub cipher_proof: Proof<Bn254>,
 }
 
 impl CA {
+    // Initialize a CA.
     pub fn init(attribute_num: usize, tpke_key: PublicKey) -> Self {
         let private_key = new_key();
         let k = private_key.scalar_key();
-        //TODO: gen generators
+        // gen generators
         let generators: Vec<Point> = (0..attribute_num)
             .map(|i| {
                 let g1 = poseidon_hash(vec![&k, &i.to_bigint().unwrap()]).unwrap() * B8.clone();
@@ -88,7 +105,8 @@ impl CA {
         .unwrap_or_else(|error| {
             panic!("{:?}", error);
         });
-
+        
+        // Generate zero-knowledge proof parameters.
         let builder = CircomBuilder::new(cfg.clone());
         let circom = builder.setup();
 
@@ -106,11 +124,13 @@ impl CA {
             tpke_key,
         }
     }
-
+    
+    // public key of CA
     pub fn pubkey(&self) -> Point {
         self.private_key.public()
     }
-
+    
+    // A part of the CA used for serialization.
     pub fn part1(&self) -> CAPart1 {
         CAPart1 {
             attribute_num: self.attribute_num,
@@ -121,12 +141,14 @@ impl CA {
             tpke_key: self.tpke_key.clone(),
         }
     }
-
+    
+    // Save the CA data to a file.
     pub fn save(&self, path: &str) -> std::io::Result<()> {
         let mut file1 = File::create(path.to_owned() + ".1")?;
         let file2 = File::create(path.to_owned() + ".2")?;
         let file3 = File::create(path.to_owned() + ".3")?;
 
+        // save part 1   
         let p1_data = to_stdvec(&self.part1()).unwrap();
         file1.write_all(&p1_data)?;
 
@@ -137,8 +159,10 @@ impl CA {
 
         Ok(())
     }
-
+    
+    // Load a CA from a file.
     pub fn load(path: &str) -> std::io::Result<Self> {
+        // load part 1
         let p1_data = fs::read(path.to_owned() + ".1")?;
         let ca1: CAPart1 = from_bytes(&p1_data).unwrap();
 
@@ -169,14 +193,16 @@ impl CA {
             tpke_key: ca1.tpke_key,
         })
     }
-
+    
+    // Process the user's credential request, verify the request data, and issue a credential.
+    // Note: This function does not handle the validation of user identity attributes.
     pub fn gen_credential(&mut self, req: CredentialRequest) -> Result<Credential, String> {
         if req.attributes.len() != self.attribute_num {
             return Err("Invalid number of attributes".to_string());
         }
         // verif proof
         let mut builder = CircomBuilder::new(self.zkp_cfg.clone());
-
+        // put public input
         builder.push_input("C1x", req.cipher.c1.scalar_x());
         builder.push_input("C1y", req.cipher.c1.scalar_y());
         builder.push_input("C2x", req.cipher.c2.scalar_x());
@@ -193,7 +219,8 @@ impl CA {
         if !verified {
             return Err("Invalid Cipher Proof".to_string());
         }
-
+        
+        // compute pedersen commitment
         let attr_commit: Point = req
             .attributes
             .iter()
@@ -213,9 +240,11 @@ impl CA {
                 .chain(inputs.iter().skip(4))
                 .collect(),
         )?;
-
+        
+        // sign data
         let signature = self.private_key.sign(msg_hash)?;
-
+        
+        // save user info
         self.user_infos.insert(
             req.master_key_g.clone(),
             UserInfo {

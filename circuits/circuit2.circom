@@ -1,3 +1,5 @@
+// check c == a * b
+
 template CheckBits(n) {
     signal input in;
     signal bits[n];

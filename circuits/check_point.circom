@@ -1,3 +1,5 @@
+// check if (x,y) is a valid point on babyjub
+
 pragma circom 2.0.0;
 include "circomlib/babyjub.circom";
 

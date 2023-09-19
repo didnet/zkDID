@@ -79,51 +79,49 @@ cargo test --package hades --test contract -- bench_all --exact --nocapture
 ```
 Since the second method runs in debug mode, its evaluation results are not accurate (slower).
 
-Below are the test results, which are presented in Tables 1 and Table 2 of the paper.
+Below are the test results (in release model), which are presented in Tables 1 and Table 2 of the paper.
 Note that due to differences in CPU performance, the test results may vary across different running platforms.
 
 ```bash
-running 1 test
-1. Start setting up the committee: 
+1. Start setting up the committee:
 1. The committee has been set up.
-2. Start setting up CA: 
+2. Start setting up CA:
+2.1 Start adding CA to trusted list:
 2. CA has been set up.
 3. Start setting up the identity contract:
-tx_hash: 0x1942bb3d258c1cca263f8177751c20b9fe9a814080ccf58b66fd5a1d5c355f1e, Gas_used: Some(29364)
+tx_hash: 0x7f594106aff1e89b3b0c1b36e237d3145a791f485aea5a179d83423a3659614e, Gas_used: Some(29364)
 3. The identity contract has been set up.
 4. Start updating the identity contract:
-tx_hash: 0xe9153b33a1ebb8b86cd7c9f20a3b42c1b8bf4f52ec19a048305fd9b363e78358, Gas_used: Some(88943)
+tx_hash: 0x5a137940d5b6616ee5f4245df9fc78dffe2635dae035224eea12a650b8cad527, Gas_used: Some(88955)
 4. The identity contract has been updated.
 5. Start requesting credential
-Credential request proof time: 318 ms
+Credential request proof time: 195 ms
 5. Credential generated!
-6. Start to generate psedonyms: Pseudonym register proof time: 1470 ms
-tx_hash: 0x6a5d2672811b9cb1aa576725846948d0a3b92f444b3e88cb8c585a6e24445eaa, Gas_used: Some(337101)
+6. Start to generate psedonyms: Pseudonym register proof time: 614 ms
+tx_hash: 0x053b1b843aa73e3cc0e70081c89ba54e10b29b9778133de03c8b225582a10cd0, Gas_used: Some(337101)
 6. pseudonym 1 generated.
-Pseudonym register proof time: 1460 ms
-test bench_all has been running for over 60 seconds
-tx_hash: 0x7bc1356d11c4bdaa367587d1a748c75a20e13e69dd112243e3840ab9e2474506, Gas_used: Some(337089)
+Pseudonym register proof time: 599 ms
+tx_hash: 0x00ee54cd220a4f1016cff8a7105ccf02b2c88ffa8abd1b365aa019cfb9e419d9, Gas_used: Some(337137)
 6. pseudonym 2 generated.
-7. Start to response to Sybil-resistance: 
-Sybil-resistance proof time: 324 ms
-tx_hash: 0x79d3c4110a1a617a5f570dc3381da0d66e9baac322fe3293be3457d4d1252f3d, Gas_used: Some(249614)
+7. Start to response to Sybil-resistance:
+Sybil-resistance proof time: 245 ms
+tx_hash: 0x43923732c81f68422ba8e5af1286204fc9ed6422cba7ec0e8b6af4f3355461d2, Gas_used: Some(249614)
 7. proof accepted.
 8. Start to prove identity attributes (Selective disclosure):
-Identity proof time: 929 ms
-tx_hash: 0x24319bb93fe2f490c953cd225c62889093ac51fcbc227a96864caddaec9703b0, Gas_used: Some(232596)
+Identity proof time: 564 ms
+tx_hash: 0x87a6029c981c7306f2f1575c8c16ba86ea5be3f5952f2a810c6174d5eca642ff, Gas_used: Some(232644)
 8. proof accepted.
 9. Start to audit:
 9. User info revealed
-10. Start to trace user: 
+10. Start to trace user:
 10. all pseudonyms traced: [0x8181082017346679045203273291153336789837, 0x0056927037680436204345599445309492724824]
 11. Start to revoke user:
 11.1 Start to revoke credential:
-tx_hash: 0x210c0715b063e7a88b6fe28a252d737d6270c38c655c1885bfdd5f0ae3c6489f, Gas_used: Some(88943)
+tx_hash: 0x19b9e54d61bb8b88f2e0b1d61e52f1830ea7a851e9f085039279272b99ed86bb, Gas_used: Some(88955)
 11.1 Credential revoked!
 11.2 Start to revoke pesudonyms:
-tx_hash: 0x78e2d57b35e4257a0c454c86286b2fd7bf820dd0dcf2e059592d0bfd65afcf7e, Gas_used: Some(46617)
+tx_hash: 0x9ee1f427493b4dafae2b062fbaa03a85fccbb49d27a4c9bee17470cc7ae20814, Gas_used: Some(46617)
 11.2 Pesudonyms revoked.
-test bench_all ... ok
 ```
 
 ### Circuits  constraints

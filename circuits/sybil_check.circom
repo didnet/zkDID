@@ -1,3 +1,5 @@
+// Verify whether the given access token is valid.
+
 pragma circom 2.0.0;
 
 include "circomlib/babyjub.circom";

@@ -1,5 +1,6 @@
 use hades::bench;
-// for bench
+// The main function.
+
 #[tokio::main]
 async fn main() {
     bench::bench_all().await.unwrap();

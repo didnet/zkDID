@@ -1,3 +1,4 @@
+// Verify whether the given pseudonym was registered using a valid credential.
 pragma circom 2.0.0;
 
 include "circomlib/babyjub.circom";

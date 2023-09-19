@@ -1,3 +1,5 @@
+// Check whether the given Merkle proof is a valid proof.
+
 pragma circom 2.0.0;
 
 include "circomlib/poseidon.circom";

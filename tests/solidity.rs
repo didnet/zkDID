@@ -1,3 +1,5 @@
+// This is a test file, primarily used to test the Ethereum contract interaction functions.
+
 use ark_circom::{ethereum, CircomBuilder, CircomConfig};
 use color_eyre::Result;
 use rand::thread_rng;
@@ -14,6 +16,7 @@ use ethers::{
 use std::{convert::TryFrom, sync::Arc, time::Duration};
 
 #[tokio::test]
+// Test the interaction with the zero-knowledge proof verification contract.
 async fn solidity_verifier() -> Result<()> {
     let cfg = CircomConfig::<Bn254>::new(
         "./circuits/circuit2_js/circuit2.wasm",

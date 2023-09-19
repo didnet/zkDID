@@ -1,5 +1,7 @@
-use std::vec;
+// This file implements a Merkle tree, which can support both 
+// proofs of data existence and non-existence.
 
+use std::vec;
 use baby_jub::{poseidon_hash, Q};
 use lazy_static::lazy_static;
 use num_bigint::{BigInt, ToBigInt};
@@ -11,6 +13,7 @@ lazy_static! {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+// Proof of (key,value) in the Merkle tree.
 pub struct InProof {
     pub value: BigInt,
     pub path: Vec<BigInt>,
@@ -18,6 +21,7 @@ pub struct InProof {
 }
 
 impl InProof {
+    // verify the proof
     pub fn verify(&self, root: &BigInt) -> bool {
         let r = self
             .path
@@ -33,7 +37,8 @@ impl InProof {
 
         &r == root
     }
-
+    
+    // the key of (key,value)
     pub fn key(&self) -> BigInt {
         let mut k = 0.to_bigint().unwrap();
         let mut d = 1.to_bigint().unwrap();
@@ -50,6 +55,7 @@ impl InProof {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+// Proof that (key,value) is not in the Merkle tree.
 pub struct NotInProof {
     pub value: BigInt,
     pub siblings: [BigInt; 2],
@@ -59,6 +65,7 @@ pub struct NotInProof {
 }
 
 impl NotInProof {
+    // verify the proof
     pub fn verify(&self, root: [&BigInt; 2]) -> bool {
         if self.value <= self.siblings[0] || self.value >= self.siblings[1] {
             return false;
@@ -76,7 +83,8 @@ impl NotInProof {
 
         &r == root[0] || &r == root[1]
     }
-
+    
+    // key of the left node
     pub fn left_key(&self) -> BigInt {
         let mut k = 0.to_bigint().unwrap();
         let mut d = 2.to_bigint().unwrap();
@@ -90,7 +98,8 @@ impl NotInProof {
 
         k
     }
-
+    
+    // key of the right node
     pub fn right_key(&self) -> BigInt {
         let mut k = 1.to_bigint().unwrap();
         let mut d = 2.to_bigint().unwrap();
@@ -107,15 +116,20 @@ impl NotInProof {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+// A complete binary tree, where empty positions are filled with 0.
 pub struct MerkleTree {
+    // size of non-empty nodes
     pub len: usize,
+    // layers of the tree
     pub tiers: usize,
     pub nodes: Vec<Vec<BigInt>>,
     pub empty_nodes: Vec<BigInt>,
 }
 
 impl MerkleTree {
+    // Initialize the Merkle tree.
     pub fn new(tiers: usize) -> Self {
+        // Calculate the value of empty nodes for each layer.
         let empty_nodes: Vec<BigInt> = (0..tiers)
             .scan(ZERO.clone(), |state, i| {
                 if i == 0 {
@@ -126,7 +140,7 @@ impl MerkleTree {
                 }
             })
             .collect();
-
+        // nodes by layers
         let nodes = vec![Vec::new(); tiers];
         let tree = Self {
             len: 0,
@@ -137,11 +151,13 @@ impl MerkleTree {
 
         tree
     }
-
+    
+    // the root of merkle tree
     pub fn root(&self) -> BigInt {
         self.nodes[self.tiers - 1][0].clone()
     }
-
+    
+    // insert nodes
     pub fn insert_nodes(&mut self, nodes: Vec<BigInt>) {
         self.nodes[0].extend(nodes.into_iter());
         self.nodes[0].sort();
@@ -159,7 +175,8 @@ impl MerkleTree {
 
         self.nodes[0] = self.nodes[0][0..self.len].to_vec();
     }
-
+    
+    // Generate existence proof for the key.
     pub fn gen_inproof_raw(&self, mut idx: usize) -> InProof {
         let mut path = Vec::new();
         let mut flags = Vec::new();
@@ -177,7 +194,8 @@ impl MerkleTree {
         }
         InProof { value, path, flags }
     }
-
+    
+    // Generate existence proof for the data.
     pub fn gen_inproof(&self, node: BigInt) -> Result<InProof, usize> {
         let idx = self.nodes[0].binary_search(&node)?;
         Ok(self.gen_inproof_raw(idx))
@@ -185,30 +203,37 @@ impl MerkleTree {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+// Merkle tree used for non-existence proof,
+// use two Merkle trees to reduce verification overhead.
 pub struct DualTree {
     pub tree0: MerkleTree,
     pub tree1: MerkleTree,
 }
 
 impl DualTree {
+    // Initialize the Merkle tree.
     pub fn new(tiers: usize) -> Self {
         let mut tree0 = MerkleTree::new(tiers);
         let mut tree1 = MerkleTree::new(tiers);
+        // Mark the left boundary and the right boundary.
         tree0.insert_nodes(vec![ZERO.clone(), BNMAX.clone()]);
         tree1.insert_nodes(vec![ZERO.clone(), ZERO.clone(), BNMAX.clone()]);
 
         Self { tree0, tree1 }
     }
-
+    
+    // root of the merkle tree
     pub fn roots(&self) -> (BigInt, BigInt) {
         (self.tree0.root(), self.tree1.root())
     }
-
+    
+    // insert nodes
     pub fn insert_nodes(&mut self, nodes: Vec<BigInt>) {
         self.tree0.insert_nodes(nodes.clone());
         self.tree1.insert_nodes(nodes.clone());
     }
-
+    
+    // Generate non-existence proof for the node.
     pub fn gen_notinproof(&self, node: BigInt) -> Result<NotInProof, usize> {
         let idx = self.tree0.nodes[0].binary_search(&node);
 
@@ -238,6 +263,7 @@ mod tests {
     use num_bigint::ToBigInt;
 
     #[test]
+    // test existence proof
     fn test_inproof() {
         let mut tree = MerkleTree::new(64);
         tree.insert_nodes(
@@ -253,6 +279,7 @@ mod tests {
     }
 
     #[test]
+    // test non-existence proof
     fn test_notinproof() {
         let mut tree = DualTree::new(64);
         tree.insert_nodes(
