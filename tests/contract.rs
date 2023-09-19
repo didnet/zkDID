@@ -241,12 +241,12 @@ async fn bench_all() -> Result<()> {
 
     let client = SignerMiddleware::new(provider.clone(), wallet.with_chain_id(97u64));
     let client = Arc::new(client);
-    
+
     println!("1. Start setting up the committee: ");
     let mut cm1 = Committee::load("./data/test_cm1")?;
     let mut cm2 = Committee::load("./data/test_cm2")?;
     println!("1. The committee has been set up.");
-    
+
     println!("2. Start setting up CA: ");
     let mut ca = CA::load("./data/test_ca.bak")?;
     ca.tpke_key = cm1.tpke_key.as_ref().unwrap().clone();
@@ -363,7 +363,7 @@ async fn bench_all() -> Result<()> {
 
     let user_info = ca.get_user_info(&m1).unwrap();
     println!("9. User info revealed");
-    
+
     println!("10. Start to trace user: ");
     let k2_1 = cm1.decrypt_shard(&user_info.cipher.c1);
     let k2_2 = cm2.decrypt_shard(&user_info.cipher.c1);
@@ -374,10 +374,12 @@ async fn bench_all() -> Result<()> {
         .get_derived_address(&beta, contract_address, client.clone())
         .await?;
     println!("10. all pseudonyms traced: {:?}", derived_address);
-    
+
     println!("11. Start to revoke user:");
     println!("11.1 Start to revoke credential:");
-    let _res = cm1.revoke_credential(get_timestamp(), vec![m1], contract_address, client.clone()).await?;
+    let _res = cm1
+        .revoke_credential(get_timestamp(), vec![m1], contract_address, client.clone())
+        .await?;
     println!("11.1 Credential revoked!");
     println!("11.2 Start to revoke pesudonyms:");
     let _res = cm1

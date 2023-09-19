@@ -77,17 +77,17 @@ impl CredentialStore {
             ca_key,
         }
     }
-    
+
     // return the master public key of the credential
     pub fn master_key_g(&self) -> Point {
         &self.master_key * G.clone()
     }
-    
+
     // the public key of the trapdoor
     pub fn beta_g(&self) -> Point {
         &self.beta * G.clone()
     }
-    
+
     // update the credential
     pub fn update_credential(&mut self, cred: Credential) {
         self.credential = Some(cred);
@@ -143,7 +143,7 @@ impl Client {
             tpke_key,
         }
     }
-    
+
     // save the client data to a file
     pub fn save(&self, path: &str) -> std::io::Result<()> {
         let mut file = File::create(path)?;
@@ -152,7 +152,7 @@ impl Client {
 
         Ok(())
     }
-    
+
     // load client data from a file
     pub fn load(path: &str) -> std::io::Result<Self> {
         let data = fs::read(path)?;
@@ -160,7 +160,7 @@ impl Client {
 
         Ok(client)
     }
-    
+
     // request a credential from CA
     pub fn request_credential(
         &mut self,
@@ -213,7 +213,7 @@ impl Client {
             .insert(raw_credential.master_key_g(), raw_credential);
         request
     }
-    
+
     // save the credential
     pub fn fill_credential(&mut self, credential: Credential) {
         self.credentials
@@ -222,7 +222,7 @@ impl Client {
                 cs.update_credential(credential);
             });
     }
-    
+
     // register a pseudonyms
     pub fn derive_identity(
         &mut self,
@@ -251,7 +251,7 @@ impl Client {
         let attr_commit = &credential.attr_commit;
         // pedersen commitment
         let attr_blind = attr_commit + &r * G.clone();
-        
+
         // merkle proof of CA in the trust list
         let proof1 = committee.ca_tree.gen_inproof(cs.ca_key.scalar_y()).unwrap();
         // merkle proof that the credential is not in the revocation list.
@@ -326,15 +326,15 @@ impl Client {
 
         let circom = builder.build().unwrap();
         let pub_inputs = circom.get_public_inputs().unwrap();
-        
+
         // the zero knowledge proof
         let proof = prove(circom, &committee.zkp_params, &mut rng).unwrap();
-        
+
         println!(
             "Pseudonym register proof time: {:?} ms",
             time_start.elapsed().unwrap().as_millis()
         );
-        
+
         // save the request
         cs.derived_keys.insert(
             sn.clone(),
@@ -360,7 +360,7 @@ impl Client {
             pub_inputs,
         }
     }
-    
+
     // Generate the information required to respond to sybil resistance.
     pub fn gen_appkey(
         &self,
@@ -409,9 +409,16 @@ impl Client {
             address: ks.address.clone(),
         }
     }
-    
+
     // Generate a proof that the identity information meets a certain assertion.
-    pub fn gen_identity_proof(&self, committee: &Committee, master_key: &Point, sn: &BigInt, l_range: Vec<BigInt>, r_range: Vec<BigInt>) -> (Point, BigInt, Proof<Bn254>, Vec<Fr>) {
+    pub fn gen_identity_proof(
+        &self,
+        committee: &Committee,
+        master_key: &Point,
+        sn: &BigInt,
+        l_range: Vec<BigInt>,
+        r_range: Vec<BigInt>,
+    ) -> (Point, BigInt, Proof<Bn254>, Vec<Fr>) {
         // get credential information
         let cs = self.credentials.get(master_key).unwrap();
         // get pseudonyms information
@@ -419,21 +426,29 @@ impl Client {
         // compute the hash of public inputs
         let hash1 = poseidon_hash(l_range.iter().take(6).collect()).unwrap();
         let hash2 = poseidon_hash(r_range.iter().take(6).collect()).unwrap();
-        let lrcm = poseidon_hash(vec![&l_range[6], &l_range[7], &r_range[6], &r_range[7], &hash1, &hash2]).unwrap();
-        
+        let lrcm = poseidon_hash(vec![
+            &l_range[6],
+            &l_range[7],
+            &r_range[6],
+            &r_range[7],
+            &hash1,
+            &hash2,
+        ])
+        .unwrap();
+
         let credential = cs.credential.as_ref().unwrap();
         // pedersen commitment
-        let attr_blind =  &credential.attr_commit + &ks.commit_nonce * G.clone();
+        let attr_blind = &credential.attr_commit + &ks.commit_nonce * G.clone();
 
         let mut builder = CircomBuilder::new(committee.pedersen_cfg.clone());
         builder.push_input("Ax", attr_blind.scalar_x());
         builder.push_input("Ay", attr_blind.scalar_y());
         builder.push_input("lrcm", lrcm.clone());
         builder.push_input("k", ks.commit_nonce.clone());
-        
+
         for a in &cs.attributes {
             builder.push_input("a", a.clone());
-        } 
+        }
 
         for l in &l_range {
             builder.push_input("l", l.clone());
@@ -452,9 +467,8 @@ impl Client {
         let proof = prove(circom, &committee.pedersen_params, &mut rng).unwrap();
 
         (attr_blind, lrcm, proof, pub_inputs)
-
     }
-    
+
     // register a pseudonym
     pub async fn register<M: Middleware + 'static, S: Signer + 'static>(
         &mut self,
@@ -468,10 +482,10 @@ impl Client {
         // the contract address
         let address = contract_address.parse::<Address>()?;
         let contract = IdentityManager::new(address, client.clone());
-        
+
         // the number of address register in the identity contract
         let n = contract.num_of_address().call().await?;
-        
+
         // request data
         let req = self.derive_identity(
             committee,
@@ -480,14 +494,14 @@ impl Client {
             user_address,
             n.as_u64(),
         );
-        
+
         // public inputs
         let inputs = &req.pub_inputs[..6];
         // send transaction
         let _res = contract.do_register(req.proof, inputs).await?;
         Ok(req.sn)
     }
-    
+
     // Respond to a sybil resistance instance on-chain.
     pub async fn send_appkey<M: Middleware + 'static, S: Signer + 'static>(
         &mut self,
@@ -508,21 +522,21 @@ impl Client {
             "Sybil-resistance proof time: {:?} ms",
             time_start.elapsed().unwrap().as_millis()
         );
-        
+
         // send transaction
         let _res = contract
             .do_set_appkey(&req.address, &req.appkey, appid, req.proof)
             .await?;
         Ok(())
     }
-    
+
     // Verify that the identity attribute meets a certain assertion on-chain.
     pub async fn verify_identity<M: Middleware + 'static, S: Signer + 'static>(
         &mut self,
         committee: &Committee,
         master_key: &Point,
         sn: &BigInt,
-        l_range: Vec<BigInt>, 
+        l_range: Vec<BigInt>,
         r_range: Vec<BigInt>,
         contract_address: &str,
         client: Arc<SignerMiddleware<M, S>>,
@@ -532,12 +546,13 @@ impl Client {
 
         let time_start = SystemTime::now();
         // generate data
-        let (a, lrcm, proof, _) = self.gen_identity_proof(committee, master_key, sn, l_range, r_range);
+        let (a, lrcm, proof, _) =
+            self.gen_identity_proof(committee, master_key, sn, l_range, r_range);
         println!(
             "Identity proof time: {:?} ms",
             time_start.elapsed().unwrap().as_millis()
         );
-        
+
         // send transaction
         let _res = contract
             .do_veriy_identity(&a.scalar_x(), &a.scalar_y(), &lrcm, proof)

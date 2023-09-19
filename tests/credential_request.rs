@@ -1,13 +1,13 @@
 // This is a test file, mainly used to test the application of credentials
 // and pseudonym registration.
 
+use baby_jub::G;
 use baby_jub::{new_key, Point, PrivateKey};
 use hades::ca_client::CA;
 use hades::committee_client::Committee;
 use hades::tpke::PublicKey;
 use hades::user_client::Client;
 use num_bigint::{BigInt, ToBigInt};
-use baby_jub::G;
 
 use core::str::FromStr;
 
@@ -27,7 +27,7 @@ fn test_credential_request() {
     let attributes: Vec<BigInt> = (0..8).map(|x| (x + 10).to_bigint().unwrap()).collect();
 
     let expiration = 31536000;
-    
+
     // generate request
     let req = user.request_credential(attributes, expiration, &ca);
     // generate credential
@@ -108,7 +108,7 @@ fn test_app_key() {
     let address = BigInt::from_str("328659427551853837776595111020800456678649075473").unwrap();
     let req2 = user.derive_identity(&cm1, &req.master_key_g, time_reserve, &address, num);
     println!("Identity derive finish!");
-    
+
     // application id
     let appid = BigInt::from_str("628659427551853837776595111020800456678649075473").unwrap();
     // generate proof
@@ -159,10 +159,11 @@ fn test_identity_proof() {
     println!("Identity derive finish!");
 
     let (_a, _lrcm, proof, pub_inputs) = user.gen_identity_proof(
-        &cm1, 
-        &req.master_key_g, 
+        &cm1,
+        &req.master_key_g,
         &req2.sn,
         (0..8).map(|x| (x + 1).to_bigint().unwrap()).collect(),
-        (0..8).map(|x| (x + 20).to_bigint().unwrap()).collect());
+        (0..8).map(|x| (x + 20).to_bigint().unwrap()).collect(),
+    );
     assert!(cm1.verify_identity_proof(pub_inputs, &proof));
 }

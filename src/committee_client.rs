@@ -8,8 +8,12 @@ use crate::tpke::PublicKey;
 use crate::user_client::{ApplicationKey, IdentityRequest};
 use crate::{BabyPoint, IdentityFullMeta, IdentityManager};
 use ark_bn254::Bn254;
+use ark_bn254::Fr;
 use ark_circom::{CircomBuilder, CircomConfig};
-use ark_groth16::{generate_random_parameters, prepare_verifying_key, verify_proof, ProvingKey, KeySize, Proof};
+use ark_ff::bytes::ToBytes;
+use ark_groth16::{
+    generate_random_parameters, prepare_verifying_key, verify_proof, KeySize, Proof, ProvingKey,
+};
 use ark_serialize::*;
 use baby_jub::{new_key, poseidon_hash, Point, G};
 use color_eyre::Result;
@@ -19,8 +23,6 @@ use rand::thread_rng;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::fs::File;
-use ark_ff::bytes::ToBytes;
-use ark_bn254::Fr;
 
 use std::io::{BufReader, BufWriter};
 
@@ -63,7 +65,7 @@ impl Committee {
         let tpke_sec = new_key().scalar_key();
 
         // TODO: make trust setup
-        // 
+        //
         let cfg = CircomConfig::<Bn254>::load(
             "./circuits/pseudonym_check.so",
             "./circuits/pseudonym_check.r1cs",
@@ -71,20 +73,18 @@ impl Committee {
         .unwrap_or_else(|error| {
             panic!("{:?}", error);
         });
-        
+
         let builder = CircomBuilder::new(cfg.clone());
         let circom = builder.setup();
 
         let mut rng = thread_rng();
         let params = generate_random_parameters::<Bn254, _, _>(circom, &mut rng).unwrap();
 
-        let app_cfg = CircomConfig::<Bn254>::load(
-            "./circuits/sybil_check.so",
-            "./circuits/sybil_check.r1cs",
-        )
-        .unwrap_or_else(|error| {
-            panic!("{:?}", error);
-        });
+        let app_cfg =
+            CircomConfig::<Bn254>::load("./circuits/sybil_check.so", "./circuits/sybil_check.r1cs")
+                .unwrap_or_else(|error| {
+                    panic!("{:?}", error);
+                });
 
         let builder = CircomBuilder::new(app_cfg.clone());
         let circom = builder.setup();
@@ -108,7 +108,7 @@ impl Committee {
 
         Self {
             tpke_sec,
-            ca_tree: MerkleTree::new(31), // 20
+            ca_tree: MerkleTree::new(31),  // 20
             block_tree: DualTree::new(41), // 32
             zkp_cfg: cfg,
             zkp_params: params,
@@ -119,7 +119,7 @@ impl Committee {
             tpke_key: None,
         }
     }
-    
+
     // part of committee, used in serialization
     pub fn part1(&self) -> CommitteePart1 {
         CommitteePart1 {
@@ -139,11 +139,11 @@ impl Committee {
         let file5 = File::create(path.to_owned() + ".p1")?;
         let file6 = File::create(path.to_owned() + ".p2")?;
         let file7 = File::create(path.to_owned() + ".p3")?;
-        
+
         // save part 1
         let p1_data = to_stdvec(&self.part1()).unwrap();
         file1.write_all(&p1_data)?;
-        
+
         let w2 = BufWriter::new(file2);
         self.zkp_params.size().serialize_unchecked(w2).unwrap();
         let w3 = BufWriter::new(file3);
@@ -159,7 +159,7 @@ impl Committee {
 
         Ok(())
     }
-    
+
     // load committee data from a file
     pub fn load(path: &str) -> std::io::Result<Self> {
         // load part 1
@@ -175,7 +175,7 @@ impl Committee {
         let file4 = File::open(path.to_owned() + ".s3")?;
         let reader4 = BufReader::new(file4);
         let pedersen_size = KeySize::deserialize_unchecked(reader4).unwrap();
-        
+
         let file5 = File::open(path.to_owned() + ".p1")?;
         let reader5 = BufReader::new(file5);
         let zkp_params = ProvingKey::<Bn254>::read(reader5, &zkp_size);
@@ -196,13 +196,11 @@ impl Committee {
             panic!("{:?}", error);
         });
 
-        let app_cfg = CircomConfig::<Bn254>::load(
-            "./circuits/sybil_check.so",
-            "./circuits/sybil_check.r1cs",
-        )
-        .unwrap_or_else(|error| {
-            panic!("{:?}", error);
-        });
+        let app_cfg =
+            CircomConfig::<Bn254>::load("./circuits/sybil_check.so", "./circuits/sybil_check.r1cs")
+                .unwrap_or_else(|error| {
+                    panic!("{:?}", error);
+                });
 
         let pedersen_cfg = CircomConfig::<Bn254>::load(
             "./circuits/pedersen_commit.so",
@@ -225,17 +223,17 @@ impl Committee {
             tpke_key: p1.tpke_key,
         })
     }
-    
+
     // shard of tpke public key
     pub fn tpke_shard(&self) -> Point {
         &self.tpke_sec * G.clone()
     }
-    
+
     // update tpke public key
     pub fn update_tpke_key(&mut self, tpke_key: PublicKey) {
         self.tpke_key = Some(tpke_key);
     }
-    
+
     // Update the parameters of zero-knowledge proof.
     pub fn update_zk_param(&mut self, zkp_params: ProvingKey<Bn254>) {
         self.zkp_params = zkp_params;
@@ -250,34 +248,33 @@ impl Committee {
     pub fn update_pedersen_param(&mut self, pedersen_params: ProvingKey<Bn254>) {
         self.pedersen_params = pedersen_params;
     }
-    
+
     // Verify the zero-knowledge proof for pseudonym registration.
     pub fn verify_key_request(&self, req: &IdentityRequest) -> bool {
-        
         let pvk = prepare_verifying_key(&self.zkp_params.vk);
 
         verify_proof(&pvk, &req.proof, &req.pub_inputs).unwrap()
     }
-    
+
     // Verify the zero-knowledge proof for sybil resistance
     pub fn verify_app_key(&self, appkey: &ApplicationKey) -> bool {
         let pvk = prepare_verifying_key(&self.app_params.vk);
 
         verify_proof(&pvk, &appkey.proof, &appkey.pub_inputs).unwrap()
     }
-    
+
     // Verify the zero-knowledge proof for identity check
     pub fn verify_identity_proof(&self, public_inputs: Vec<Fr>, proof: &Proof<Bn254>) -> bool {
         let pvk = prepare_verifying_key(&self.pedersen_params.vk);
 
         verify_proof(&pvk, proof, &public_inputs).unwrap()
     }
-    
+
     // get decryption shard of tpke decryption
     pub fn decrypt_shard(&self, c1: &Point) -> Point {
         &self.tpke_sec * c1
     }
-    
+
     // Add a member to the committee.
     pub async fn add_committee<M: Middleware + 'static, S: Signer + 'static>(
         &self,
@@ -287,7 +284,7 @@ impl Committee {
     ) -> Result<()> {
         let address = contract_address.parse::<Address>()?;
         let contract = IdentityManager::new(address, client.clone());
-        
+
         // address of new member
         let cm2 = U256::from_little_endian(&cm.to_bytes_le().1);
         // send transaction
@@ -299,7 +296,7 @@ impl Committee {
         );
         Ok(())
     }
-    
+
     // Update the latest Merkle tree root on the blockchain.
     pub async fn update_roots_hash<M: Middleware + 'static, S: Signer + 'static>(
         &self,
@@ -312,13 +309,13 @@ impl Committee {
         let (root1, root2) = self.block_tree.roots();
         let root_ca = self.ca_tree.root();
         let y = self.tpke_key.as_deref().unwrap().scalar_y();
-        
+
         // Calculate the hash of these tree roots.
         let rh1 = poseidon_hash(vec![&root1, &root_ca, &y]).unwrap();
         let rh2 = poseidon_hash(vec![&root2, &root_ca, &y]).unwrap();
         let rh1: U256 = U256::from_little_endian(&rh1.to_bytes_le().1);
         let rh2: U256 = U256::from_little_endian(&rh2.to_bytes_le().1);
-        
+
         // send transaction
         let _res = contract
             .update_roots_hash(rh1, rh2, U256::from(version).into())
@@ -332,7 +329,7 @@ impl Committee {
         );
         Ok(())
     }
-    
+
     // Update the tpke publickey on the blockchain.
     pub async fn set_tpke_pub<M: Middleware + 'static, S: Signer + 'static>(
         &self,
@@ -358,7 +355,7 @@ impl Committee {
         );
         Ok(())
     }
-    
+
     // Push the zero-knowledge proof's validation key to the chain.
     pub async fn set_derive_vk<M: Middleware + 'static, S: Signer + 'static>(
         &self,
@@ -388,7 +385,7 @@ impl Committee {
             .await?;
         Ok(())
     }
-    
+
     // Revoke the given user pseudonym (address).
     pub async fn revoke_user<M: Middleware + 'static, S: Signer + 'static>(
         &self,
@@ -416,11 +413,13 @@ impl Committee {
         contract_address: &str,
         client: Arc<SignerMiddleware<M, S>>,
     ) -> Result<()> {
-        self.block_tree.insert_nodes(credentials.iter().map(|x| x.scalar_y()).collect());
-        self.update_roots_hash(version, contract_address, client).await?;
+        self.block_tree
+            .insert_nodes(credentials.iter().map(|x| x.scalar_y()).collect());
+        self.update_roots_hash(version, contract_address, client)
+            .await?;
         Ok(())
     }
-    
+
     // Fetch user metadata associated with the specified address from the identity contract.
     pub async fn get_user_meta<M: Middleware + 'static, S: Signer + 'static>(
         &self,
@@ -445,7 +444,7 @@ impl Committee {
             Ok(None)
         }
     }
-    
+
     // Trace back all the pseudonyms.
     pub async fn get_derived_address<M: Middleware + 'static, S: Signer + 'static>(
         &self,
@@ -457,7 +456,7 @@ impl Committee {
         let contract = IdentityManager::new(address, client.clone());
         let n = contract.num_of_address().call().await?;
         let bn = client.get_block_number().await?;
-        
+
         // Calculate all potential pseudonyms locally.
         let c1ys: Vec<[u8; 32]> = (0u64..(n.as_u64()))
             .map(|id| {

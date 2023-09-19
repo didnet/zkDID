@@ -1,4 +1,4 @@
-// This document is used to test the entire process of Hades and 
+// This document is used to test the entire process of Hades and
 // can also serve as an example to guide developers in using the
 // components of Hades.
 use color_eyre::Result;
@@ -22,23 +22,23 @@ use std::{convert::TryFrom, sync::Arc, time::Duration};
 pub async fn bench_all() -> Result<()> {
     // identity contract address
     let contract_address = "64228D9d16EC3E3dd88AF5d10984be801B1e84Dc";
-    // launch the network 
+    // launch the network
     let provider = Provider::<Http>::try_from("https://bsc-testnet.blockpi.network/v1/rpc/public")?
         .interval(Duration::from_millis(10u64));
     // the private key
     let wallet = "164c8c3b7e2b40c97e4a82d441fa6857288d3e61dbe6fe9c07e97c868b997c48"
         .parse::<LocalWallet>()?;
-    
+
     // A client used to interact with the blockchain.
     let client = SignerMiddleware::new(provider.clone(), wallet.with_chain_id(97u64));
     let client = Arc::new(client);
-    
+
     println!("1. Start setting up the committee: ");
     // load the committee data form file
     let mut cm1 = Committee::load("./data/test_cm1")?;
     let mut cm2 = Committee::load("./data/test_cm2")?;
     println!("1. The committee has been set up.");
-    
+
     println!("2. Start setting up CA: ");
     // load the ca data from file
     let mut ca = CA::load("./data/test_ca.bak")?;
@@ -92,7 +92,7 @@ pub async fn bench_all() -> Result<()> {
         )
         .await?;
     println!("6. pseudonym 1 generated.");
-    
+
     // register another pseudonym
     let wallet2 = "227db26d4fdf8470567914916252422fa7a7a98499beca9f4bd85f4d25bc5cf6"
         .parse::<LocalWallet>()?;
@@ -164,30 +164,32 @@ pub async fn bench_all() -> Result<()> {
     let (m1, m2) = cipher1.decrypt(vec![&k1, &k2], &user_address);
 
     assert_eq!(m2, ca.pubkey());
-    
+
     // get user info
     let user_info = ca.get_user_info(&m1).unwrap();
     println!("9. User info revealed");
-    
+
     println!("10. Start to trace user: ");
     // get decryption shard
     let k2_1 = cm1.decrypt_shard(&user_info.cipher.c1);
     // get decryption shard
     let k2_2 = cm2.decrypt_shard(&user_info.cipher.c1);
-    
+
     // decrtption and reveal the trap-door
     let beta = user_info.cipher.decrypt(vec![&k2_1, &k2_2]).scalar_y();
-    
+
     // trace
     let derived_address = cm1
         .get_derived_address(&beta, contract_address, client.clone())
         .await?;
     println!("10. all pseudonyms traced: {:?}", derived_address);
-    
+
     println!("11. Start to revoke user:");
     println!("11.1 Start to revoke credential:");
     // revoke the credential
-    let _res = cm1.revoke_credential(get_timestamp(), vec![m1], contract_address, client.clone()).await?;
+    let _res = cm1
+        .revoke_credential(get_timestamp(), vec![m1], contract_address, client.clone())
+        .await?;
     println!("11.1 Credential revoked!");
     println!("11.2 Start to revoke pesudonyms:");
     // revoke the pesudonyms

@@ -1,11 +1,11 @@
-// This file implements a Merkle tree, which can support both 
+// This file implements a Merkle tree, which can support both
 // proofs of data existence and non-existence.
 
-use std::vec;
 use baby_jub::{poseidon_hash, Q};
 use lazy_static::lazy_static;
 use num_bigint::{BigInt, ToBigInt};
 use serde::{Deserialize, Serialize};
+use std::vec;
 
 lazy_static! {
     pub static ref ZERO: BigInt = 0.to_bigint().unwrap();
@@ -37,7 +37,7 @@ impl InProof {
 
         &r == root
     }
-    
+
     // the key of (key,value)
     pub fn key(&self) -> BigInt {
         let mut k = 0.to_bigint().unwrap();
@@ -83,7 +83,7 @@ impl NotInProof {
 
         &r == root[0] || &r == root[1]
     }
-    
+
     // key of the left node
     pub fn left_key(&self) -> BigInt {
         let mut k = 0.to_bigint().unwrap();
@@ -98,7 +98,7 @@ impl NotInProof {
 
         k
     }
-    
+
     // key of the right node
     pub fn right_key(&self) -> BigInt {
         let mut k = 1.to_bigint().unwrap();
@@ -151,12 +151,12 @@ impl MerkleTree {
 
         tree
     }
-    
+
     // the root of merkle tree
     pub fn root(&self) -> BigInt {
         self.nodes[self.tiers - 1][0].clone()
     }
-    
+
     // insert nodes
     pub fn insert_nodes(&mut self, nodes: Vec<BigInt>) {
         self.nodes[0].extend(nodes.into_iter());
@@ -175,7 +175,7 @@ impl MerkleTree {
 
         self.nodes[0] = self.nodes[0][0..self.len].to_vec();
     }
-    
+
     // Generate existence proof for the key.
     pub fn gen_inproof_raw(&self, mut idx: usize) -> InProof {
         let mut path = Vec::new();
@@ -194,7 +194,7 @@ impl MerkleTree {
         }
         InProof { value, path, flags }
     }
-    
+
     // Generate existence proof for the data.
     pub fn gen_inproof(&self, node: BigInt) -> Result<InProof, usize> {
         let idx = self.nodes[0].binary_search(&node)?;
@@ -221,18 +221,18 @@ impl DualTree {
 
         Self { tree0, tree1 }
     }
-    
+
     // root of the merkle tree
     pub fn roots(&self) -> (BigInt, BigInt) {
         (self.tree0.root(), self.tree1.root())
     }
-    
+
     // insert nodes
     pub fn insert_nodes(&mut self, nodes: Vec<BigInt>) {
         self.tree0.insert_nodes(nodes.clone());
         self.tree1.insert_nodes(nodes.clone());
     }
-    
+
     // Generate non-existence proof for the node.
     pub fn gen_notinproof(&self, node: BigInt) -> Result<NotInProof, usize> {
         let idx = self.tree0.nodes[0].binary_search(&node);

@@ -3,19 +3,31 @@
 use baby_jub::{new_key, Point, PrivateKey};
 use hades::ca_client::CA;
 use hades::committee_client::Committee;
+use hades::convert;
 use hades::tpke::PublicKey;
 use hades::user_client::Client;
-use hades::convert;
 use num_bigint::{BigInt, ToBigInt};
 // use std::time::SystemTime;
 
 #[test]
 // Test the serialization of the R1cs file.
 fn test_convert() {
-    convert("./circuits/pseudonym_check_js/pseudonym_check.wasm", "./circuits/pseudonym_check.so");
-    convert("./circuits/sybil_check_js/sybil_check.wasm", "./circuits/sybil_check.so");
-    convert("./circuits/tpke_single_js/tpke_single.wasm", "./circuits/tpke_single.so");
-    convert("./circuits/pedersen_commit_js/pedersen_commit.wasm", "./circuits/pedersen_commit.so");
+    convert(
+        "./circuits/pseudonym_check_js/pseudonym_check.wasm",
+        "./circuits/pseudonym_check.so",
+    );
+    convert(
+        "./circuits/sybil_check_js/sybil_check.wasm",
+        "./circuits/sybil_check.so",
+    );
+    convert(
+        "./circuits/tpke_single_js/tpke_single.wasm",
+        "./circuits/tpke_single.so",
+    );
+    convert(
+        "./circuits/pedersen_commit_js/pedersen_commit.wasm",
+        "./circuits/pedersen_commit.so",
+    );
 }
 
 #[test]
@@ -34,7 +46,7 @@ fn test_ca_serde() {
     let attributes: Vec<BigInt> = (0..8).map(|x| (x + 10).to_bigint().unwrap()).collect();
 
     let expiration = 31536000;
-    
+
     // create credential request
     let req = user.request_credential(attributes, expiration, &ca);
     // create credential

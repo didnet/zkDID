@@ -32,7 +32,7 @@ impl PublicKey {
             .fold(Point::identity(), |sum, val| sum + val);
         PublicKey(r)
     }
-    
+
     // encrypt a point
     pub fn encrypt(&self, msg: &Point) -> (Cipher, BigInt) {
         let mut rng = rand::thread_rng();
@@ -41,7 +41,7 @@ impl PublicKey {
         let c2 = k * &self.0 + msg;
         (Cipher { c1, c2 }, k.clone())
     }
-    
+
     // encrypt two points
     pub fn encrypt_dual(&self, msg1: &Point, msg2: &Point, salt: &BigInt) -> (CipherDual, BigInt) {
         let mut rng = rand::thread_rng();
@@ -53,7 +53,7 @@ impl PublicKey {
             poseidon_hash(vec![&ky.scalar_x(), &ky.scalar_y(), salt]).unwrap() * G.clone() + msg2;
         (CipherDual { c1, c2, c3 }, k.clone())
     }
-    
+
     // encrypt two points using the specified nonce
     pub fn encrypt_dual_with_nonce(
         &self,

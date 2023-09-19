@@ -2,6 +2,7 @@
 // providing the capability to send transactions or query contracts.
 
 use ark_circom::ethereum;
+use ark_circom::WitnessCalculator;
 use baby_jub::Point;
 use color_eyre::Result;
 use ethers::prelude::abigen;
@@ -10,14 +11,13 @@ use ethers::types::U256;
 use num_bigint::{BigInt, Sign};
 use std::convert::TryInto;
 use std::time::{SystemTime, UNIX_EPOCH};
-use ark_circom::WitnessCalculator;
 
+pub mod bench;
 pub mod ca_client;
 pub mod committee_client;
 pub mod merkle_tree;
 pub mod tpke;
 pub mod user_client;
-pub mod bench;
 
 pub fn get_timestamp() -> u64 {
     let start = SystemTime::now();
@@ -27,7 +27,7 @@ pub fn get_timestamp() -> u64 {
         .as_secs()
 }
 
-// convert r1cs 
+// convert r1cs
 pub fn convert(from: impl AsRef<std::path::Path>, to: impl AsRef<std::path::Path>) {
     WitnessCalculator::save(from, to).unwrap();
 }
@@ -116,7 +116,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         );
         Ok(true)
     }
-    
+
     // push zero-knowledge proof parameters to the identity contract.
     async fn do_set_appkey<P: Into<ethereum::Proof>>(
         &self,
@@ -144,7 +144,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         );
         Ok(true)
     }
-    
+
     // verify identitys on identity contract
     async fn do_veriy_identity<P: Into<ethereum::Proof>>(
         &self,
@@ -172,7 +172,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         );
         Ok(true)
     }
-    
+
     // push zero-knowledge proof parameters to the identity contract.
     async fn do_set_derive_vk<VK: Into<ethereum::VerifyingKey>>(&self, vk: VK) -> Result<bool> {
         // convert into the expected format by the contract
@@ -187,7 +187,7 @@ impl<M: Middleware + 'static> IdentityManager<M> {
         );
         Ok(true)
     }
-    
+
     // push zero-knowledge proof parameters to the identity contract.
     async fn do_set_appkey_vk<VK: Into<ethereum::VerifyingKey>>(&self, vk: VK) -> Result<bool> {
         // convert into the expected format by the contract

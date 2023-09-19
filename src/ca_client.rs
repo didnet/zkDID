@@ -7,8 +7,9 @@ use crate::get_timestamp;
 use crate::tpke::{Cipher, PublicKey};
 use ark_bn254::Bn254;
 use ark_circom::{CircomBuilder, CircomConfig};
+use ark_ff::bytes::ToBytes;
 use ark_groth16::{
-    generate_random_parameters, prepare_verifying_key, verify_proof, Proof, ProvingKey, KeySize
+    generate_random_parameters, prepare_verifying_key, verify_proof, KeySize, Proof, ProvingKey,
 };
 use ark_serialize::*;
 use baby_jub::{new_key, poseidon_hash, Point, PrivateKey, Signature, B8, H8};
@@ -19,7 +20,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
-use ark_ff::bytes::ToBytes;
 use std::io::{BufReader, BufWriter};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -98,14 +98,12 @@ impl CA {
             })
             .collect();
 
-        let cfg = CircomConfig::<Bn254>::load(
-            "./circuits/tpke_single.so",
-            "./circuits/tpke_single.r1cs",
-        )
-        .unwrap_or_else(|error| {
-            panic!("{:?}", error);
-        });
-        
+        let cfg =
+            CircomConfig::<Bn254>::load("./circuits/tpke_single.so", "./circuits/tpke_single.r1cs")
+                .unwrap_or_else(|error| {
+                    panic!("{:?}", error);
+                });
+
         // Generate zero-knowledge proof parameters.
         let builder = CircomBuilder::new(cfg.clone());
         let circom = builder.setup();
@@ -124,12 +122,12 @@ impl CA {
             tpke_key,
         }
     }
-    
+
     // public key of CA
     pub fn pubkey(&self) -> Point {
         self.private_key.public()
     }
-    
+
     // A part of the CA used for serialization.
     pub fn part1(&self) -> CAPart1 {
         CAPart1 {
@@ -141,14 +139,14 @@ impl CA {
             tpke_key: self.tpke_key.clone(),
         }
     }
-    
+
     // Save the CA data to a file.
     pub fn save(&self, path: &str) -> std::io::Result<()> {
         let mut file1 = File::create(path.to_owned() + ".1")?;
         let file2 = File::create(path.to_owned() + ".2")?;
         let file3 = File::create(path.to_owned() + ".3")?;
 
-        // save part 1   
+        // save part 1
         let p1_data = to_stdvec(&self.part1()).unwrap();
         file1.write_all(&p1_data)?;
 
@@ -159,7 +157,7 @@ impl CA {
 
         Ok(())
     }
-    
+
     // Load a CA from a file.
     pub fn load(path: &str) -> std::io::Result<Self> {
         // load part 1
@@ -169,18 +167,16 @@ impl CA {
         let file2 = File::open(path.to_owned() + ".2")?;
         let reader2 = BufReader::new(file2);
         let zkp_size = KeySize::deserialize_unchecked(reader2).unwrap();
-        
+
         let file3 = File::open(path.to_owned() + ".3")?;
         let reader3 = BufReader::new(file3);
         let zkp_params = ProvingKey::<Bn254>::read(reader3, &zkp_size);
 
-        let cfg = CircomConfig::<Bn254>::load(
-            "./circuits/tpke_single.so",
-            "./circuits/tpke_single.r1cs",
-        )
-        .unwrap_or_else(|error| {
-            panic!("{:?}", error);
-        });
+        let cfg =
+            CircomConfig::<Bn254>::load("./circuits/tpke_single.so", "./circuits/tpke_single.r1cs")
+                .unwrap_or_else(|error| {
+                    panic!("{:?}", error);
+                });
 
         Ok(CA {
             attribute_num: ca1.attribute_num,
@@ -193,7 +189,7 @@ impl CA {
             tpke_key: ca1.tpke_key,
         })
     }
-    
+
     // Process the user's credential request, verify the request data, and issue a credential.
     // Note: This function does not handle the validation of user identity attributes.
     pub fn gen_credential(&mut self, req: CredentialRequest) -> Result<Credential, String> {
@@ -219,7 +215,7 @@ impl CA {
         if !verified {
             return Err("Invalid Cipher Proof".to_string());
         }
-        
+
         // compute pedersen commitment
         let attr_commit: Point = req
             .attributes
@@ -240,10 +236,10 @@ impl CA {
                 .chain(inputs.iter().skip(4))
                 .collect(),
         )?;
-        
+
         // sign data
         let signature = self.private_key.sign(msg_hash)?;
-        
+
         // save user info
         self.user_infos.insert(
             req.master_key_g.clone(),
