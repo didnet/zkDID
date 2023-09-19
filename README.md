@@ -37,7 +37,7 @@ sudo apt update
 sudo apt install build-essential
 ```
 
-### Installing Rust
+### Installing Rust and Cargo
 
 Hades SDK is written in Rust. To have Rust available in your system, you can install rustup. If you’re using Linux or macOS, open a terminal and enter the following command:
 
