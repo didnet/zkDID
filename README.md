@@ -12,9 +12,21 @@ Hades is a practical decentralized identity system that supports privacy-preserv
 
 **src/user_client.rs** is a client for the users.
 
-**circuits/xxx.circom** are zero-knowledge circuits written in Circom.
+**src/tpke.rs** is the threshold public key encryption scheme.
 
+**src/merkle_tree.rs** is the merkle tree scheme.
 
+**circuits/merkle_tree.circom** is a Merkle tree zero-knowledge circuit written in Circom.
+
+**circuits/pedersen_commit.circom** is a Pedersen commitment zero-knowledge circuit written in Circom.
+
+**circuits/pseudonym_check.circom** is a zero-knowledge circuit written in Circom to verify whether the given pseudonym was registered using a valid credential.
+
+**circuits/sybil_check.circom** is a zero-knowledge circuit written in Circom to verify whether the given access token is valid.
+
+**circuits/tpke_dual.circom** is a zero-knowledge circuit written in Circom to verify threshold public key encryption for two points.
+
+**circuits/tpke_single.circom** is a zero-knowledge circuit written in Circom to verify threshold public key encryption for single points.
 
 ## How to build
 
@@ -32,6 +44,9 @@ Hades SDK is written in Rust. To have Rust available in your system, you can ins
 ```bash
 curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 ```
+
+Note: Please ensure that the installed Rust compiler version is no lower than 1.70. Using older versions may lead to program crashes.
+
 ### Installing circom
 
 Hades zkp circuits are written in circom. To have circom available in your system, you can install circom:
@@ -81,6 +96,10 @@ Since the second method runs in debug mode, its evaluation results are not accur
 
 Below are the test results (in release model), which are presented in Tables 1 and Table 2 of the paper.
 Note that due to differences in CPU performance, the test results may vary across different running platforms.
+
+Note, a portion of the gas fee is for input data costs. The input data fee is the cost associated with the data send, every zero valued byte of data is worth 4 units of gas and every non-zero valued byte of data is worth 16 units of gas. 
+The gas cost for each transaction related to pseudonym registration, Sybil-resistance, and identity assertion proofs shows slight variations.
+This is because the generation of zero-knowledge proofs is random, the proofs generated are different each time, and the gas cost required to transmit these proofs is also different (because the number of zero-value bits is different).
 
 ```bash
 1. Start setting up the committee:
