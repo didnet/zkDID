@@ -61,7 +61,7 @@ pub async fn bench_all() -> Result<()> {
         .await?;
     println!("4. The identity contract has been updated.");
 
-    println!("5. Start requesting credential");
+    println!("[credential generation] 5. Start requesting credential");
     // create an user client
     let mut user = Client::new(cm1.tpke_key.as_ref().unwrap().clone());
     let attributes: Vec<BigInt> = (0..8).map(|x| (x + 10).to_bigint().unwrap()).collect();
@@ -75,7 +75,7 @@ pub async fn bench_all() -> Result<()> {
     println!("5. Credential generated!");
 
     // register pseudonym
-    print!("6. Start to generate pseudonyms: ");
+    println!("[pseudonym registration] 6. Start to generate pseudonyms: ");
     let time_reserve = 1000;
     // The blockchain address to be registered.
     let user_address =
@@ -91,7 +91,7 @@ pub async fn bench_all() -> Result<()> {
             client.clone(),
         )
         .await?;
-    println!("6. pseudonym 1 generated.");
+    println!("[pseudonym registration] 6. pseudonym 1 generated.");
 
     // register another pseudonym
     let wallet2 = "227db26d4fdf8470567914916252422fa7a7a98499beca9f4bd85f4d25bc5cf6"
@@ -114,7 +114,7 @@ pub async fn bench_all() -> Result<()> {
         .await?;
     println!("6. pseudonym 2 generated.");
 
-    println!("7. Start to response to Sybil-resistance: ");
+    println!("[Sybil-resistance] 7. Start to response to Sybil-resistance: ");
     // generate an application id
     let appid = BigInt::from_str("994862232198212916674956859767646391285724603386").unwrap();
     // generate a no-sybil proof, and send it to the identity contract
@@ -130,7 +130,7 @@ pub async fn bench_all() -> Result<()> {
         .await?;
     println!("7. proof accepted.");
 
-    println!("8. Start to prove identity attributes (Selective disclosure):");
+    println!("[selective disclosure] 8. Start to prove identity attributes (Selective disclosure):");
     // generate an identity proof, and send it to the identity contract
     let _res = user
         .verify_identity(
@@ -191,7 +191,7 @@ pub async fn bench_all() -> Result<()> {
         .revoke_credential(get_timestamp(), vec![m1], contract_address, client.clone())
         .await?;
     println!("11.1 Credential revoked!");
-    println!("11.2 Start to revoke pesudonyms:");
+    println!("[pseudonym revocation] 11.2 Start to revoke pesudonyms:");
     // revoke the pesudonyms
     let _res = cm1
         .revoke_user(derived_address, contract_address, client.clone())

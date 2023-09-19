@@ -1,6 +1,17 @@
 # Hades
 Hades is a practical decentralized identity system that supports privacy-preserving, full accountability, and Fine-gained sybil-resistance.
 
+## Components
+
+There are four components in Hades: the **CA client**, the **committee client**, the **user client** and the **identity contract**.
+
+- The CA client is responsible for authenticating user identity attributes and issuing certificates for users. Its functions include: verifying user requests, storing identity information, and providing information required for identity accountability. Its core functions are implemented in **src/ca_client.rs**.
+
+- The Committee client is responsible for managing user identities, CAs, and identity contracts. Its functions include: auditing pseudonyms, tracing users, adding or removing CAs, revoking credentials and pseudonyms, adding or removing committee members, and updating identity contracts. Its core functions are implemented in **src/committee_client.rs**.
+
+- The User client primarily assists users in identity management, including applying for credentials, storing credentials, registering pseudonyms, storing secret information, responding to Sybil attacks, and selectively disclosing identity attributes. Its core functions are implemented in **src/user_client.rs**.
+
+- The identity contract is written in Solidity and can be deployed on any EVM-compatible blockchain. Its functions include processing pseudonym registration requests, logging the status of pseudonyms, recording pseudonym tracing data, verifying identity attribute assertions, and verifying non-Sybil proofs. Its core functions are implemented in **contracts/manager.sol**.
 
 ## Structure
 
@@ -94,12 +105,16 @@ cargo test --package hades --test contract -- bench_all --exact --nocapture
 ```
 Since the second method runs in debug mode, its evaluation results are not accurate (slower).
 
+We evaluated the implementation on an Ubuntu 2204 instance, hosted via Windows Subsystem for Linux (WSL2) on a Microsoft Windows 11 operating system. The test machine was equipped with an Intel Core i9-13900K@3.0GHz 16-Core (8P+16E) CPU and 64 GB of RAM. The identity contract was deployed on BSC Testnet. 
 Below are the test results (in release model), which are presented in Tables 1 and Table 2 of the paper.
 Note that due to differences in CPU performance, the test results may vary across different running platforms.
 
-Note, a portion of the gas fee is for input data costs. The input data fee is the cost associated with the data send, every zero valued byte of data is worth 4 units of gas and every non-zero valued byte of data is worth 16 units of gas. 
-The gas cost for each transaction related to pseudonym registration, Sybil-resistance, and identity assertion proofs shows slight variations.
-This is because the generation of zero-knowledge proofs is random, the proofs generated are different each time, and the gas cost required to transmit these proofs is also different (because the number of zero-value bits is different).
+In the aforementioned testing environment, the approximate resources used are '5min46s, 20GB of disk space' for compiling, '2min47s, 20GB of disk space' for bench (release mode) and '2min54s, 20GB of disk space' for bench (debug mode).
+
+Note that part of the gas fee comes from the input data. The input data fee is the cost associated with the data sent, every zero-valued byte of data is worth 4 units of gas and every non-zero-valued byte of data is worth 16 units of gas. 
+Zero-knowledge proof generation is random, leading to different proofs in each run. So, the gas cost required to transmit proofs in each run is different (because the number of zero-value bits is different). 
+So, the gas cost for each transaction related to pseudonym registration, Sybil-resistance, and identity assertion proofs shows slight variations.
+Due to the random nature of proof generation, there may be slight variations in the time it takes to generate a proof each time.
 
 ```bash
 1. Start setting up the committee:
@@ -113,20 +128,21 @@ tx_hash: 0x7f594106aff1e89b3b0c1b36e237d3145a791f485aea5a179d83423a3659614e, Gas
 4. Start updating the identity contract:
 tx_hash: 0x5a137940d5b6616ee5f4245df9fc78dffe2635dae035224eea12a650b8cad527, Gas_used: Some(88955)
 4. The identity contract has been updated.
-5. Start requesting credential
+[credential generation] 5. Start requesting credential
 Credential request proof time: 195 ms
 5. Credential generated!
-6. Start to generate psedonyms: Pseudonym register proof time: 614 ms
+[pseudonym registration] 6. Start to generate psedonyms: 
+Pseudonym register proof time: 614 ms
 tx_hash: 0x053b1b843aa73e3cc0e70081c89ba54e10b29b9778133de03c8b225582a10cd0, Gas_used: Some(337101)
-6. pseudonym 1 generated.
+[pseudonym registration] 6. pseudonym 1 generated.
 Pseudonym register proof time: 599 ms
 tx_hash: 0x00ee54cd220a4f1016cff8a7105ccf02b2c88ffa8abd1b365aa019cfb9e419d9, Gas_used: Some(337137)
 6. pseudonym 2 generated.
-7. Start to response to Sybil-resistance:
+[Sybil-resistance] 7. Start to response to Sybil-resistance:
 Sybil-resistance proof time: 245 ms
 tx_hash: 0x43923732c81f68422ba8e5af1286204fc9ed6422cba7ec0e8b6af4f3355461d2, Gas_used: Some(249614)
 7. proof accepted.
-8. Start to prove identity attributes (Selective disclosure):
+[selective disclosure] 8. Start to prove identity attributes (Selective disclosure):
 Identity proof time: 564 ms
 tx_hash: 0x87a6029c981c7306f2f1575c8c16ba86ea5be3f5952f2a810c6174d5eca642ff, Gas_used: Some(232644)
 8. proof accepted.
@@ -138,7 +154,7 @@ tx_hash: 0x87a6029c981c7306f2f1575c8c16ba86ea5be3f5952f2a810c6174d5eca642ff, Gas
 11.1 Start to revoke credential:
 tx_hash: 0x19b9e54d61bb8b88f2e0b1d61e52f1830ea7a851e9f085039279272b99ed86bb, Gas_used: Some(88955)
 11.1 Credential revoked!
-11.2 Start to revoke pesudonyms:
+[pseudonym revocation] 11.2 Start to revoke pesudonyms:
 tx_hash: 0x9ee1f427493b4dafae2b062fbaa03a85fccbb49d27a4c9bee17470cc7ae20814, Gas_used: Some(46617)
 11.2 Pesudonyms revoked.
 ```
