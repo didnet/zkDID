@@ -1,5 +1,5 @@
 # zk-DID
-zk-DID is a practical decentralized identity system that supports privacy-preserving, full accountability, and Fine-gained sybil-resistance.
+zk-DID (Hades) is a practical decentralized identity system that supports privacy-preserving, full accountability, and Fine-gained sybil-resistance.
 
 ## Components
 
